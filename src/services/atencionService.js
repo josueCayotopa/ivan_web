@@ -12,7 +12,7 @@ const getAuthHeaders = () => {
 
 const atencionService = {
   // POST /api/v1/atenciones - Listar atenciones
- async getAtenciones(page = 1, filters = {}) {
+  async getAtenciones(page = 1, filters = {}) {
     try {
       const payload = {
         page,
@@ -35,7 +35,7 @@ const atencionService = {
       // Si paginator tiene una propiedad .data que es array, usamos eso (Paginación Laravel)
       // Si no, asumimos que paginator mismo es el array (Sin paginación)
       const items = Array.isArray(paginator.data) ? paginator.data : (Array.isArray(paginator) ? paginator : []);
-      
+
       // 3. Extraemos el total
       const total = paginator.total || items.length || 0;
 
@@ -85,7 +85,7 @@ const atencionService = {
       return {
         success: response.ok,
         // Tu controlador devuelve: { success: true, count: X, data: [...] }
-        data: jsonResponse.data || [], 
+        data: jsonResponse.data || [],
         count: jsonResponse.count || 0
       };
     } catch (error) {
@@ -136,12 +136,9 @@ const atencionService = {
       throw error;
     }
   },
-
   // POST /api/v1/atenciones/store - Crear atención
   async createAtencion(atencionData) {
     try {
-      console.log('Creando atención:', atencionData); // DEBUG
-
       const response = await fetch(`${API_URL}/atenciones/store`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -151,8 +148,8 @@ const atencionService = {
       const data = await response.json();
 
       return {
-        status: data.status,
-        success: data.status === 200,
+        // ✅ CORRECCIÓN: Aceptamos cualquier código 2xx (200, 201) o la bandera success
+        success: data.success || response.ok,
         message: data.message,
         data: data.data
       };
@@ -165,30 +162,25 @@ const atencionService = {
   // POST /api/v1/atenciones/update - Actualizar atención
   async updateAtencion(id, atencionData) {
     try {
-      console.log('Actualizando atención:', id, atencionData); // DEBUG
-
       const response = await fetch(`${API_URL}/atenciones/update`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({
-          id,
-          ...atencionData
-        })
+        body: JSON.stringify({ id, ...atencionData })
       });
 
       const data = await response.json();
 
       return {
-        status: data.status,
-        success: data.status === 200,
-        message: data.message
+        // ✅ CORRECCIÓN
+        success: data.success || response.ok,
+        message: data.message,
+        data: data.data
       };
     } catch (error) {
       console.error('Error updating atencion:', error);
       throw error;
     }
   },
-
   // POST /api/v1/atenciones/cambiar-estado - Cambiar estado
   async cambiarEstado(id, nuevoEstado) {
     try {

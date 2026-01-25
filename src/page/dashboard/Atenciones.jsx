@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Calendar, Clock, User, Stethoscope, FileText, Plus, 
-    Search, Filter, LayoutGrid, List, Eye 
+    Search, Filter, LayoutGrid, List, Eye, Award 
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../services/atencionService.js';
 import FormularioAtencion from '../../components/features/atenciones/FormularioAtencion';
-import './Atenciones.css'; // Asegúrate de que este archivo tenga el contenido que subiste
+import './Atenciones.css';
 
 const Atenciones = () => {
     const [atenciones, setAtenciones] = useState([]);
@@ -14,10 +14,8 @@ const Atenciones = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedAtencion, setSelectedAtencion] = useState(null);
     
-    // Estado para la vista: 'cards' (Tarjetas) o 'table' (Tabla)
-    const [viewMode, setViewMode] = useState('cards');
+    const [viewMode, setViewMode] = useState('table');
 
-    // Filtros
     const [filtros, setFiltros] = useState({
         fecha: new Date().toISOString().split('T')[0],
         paciente_search: '',
@@ -32,22 +30,61 @@ const Atenciones = () => {
     const cargarAtenciones = async () => {
         setLoading(true);
         try {
-            // Usamos el endpoint que soporta búsqueda por fecha
-            const response = await atencionService.getAtenciones(1, {
-                fecha: filtros.fecha,
-                ...(filtros.paciente_search && { search: filtros.paciente_search }), // Ajustado a 'search' genérico
-                ...(filtros.medico_id && { medico_id: filtros.medico_id }),
-                ...(filtros.estado && { estado: filtros.estado })
-            });
+            // ✅ CAMBIO CRÍTICO: Usar getAtencionesPorFecha en lugar de getAtenciones
+            const response = await atencionService.getAtencionesPorFecha(filtros.fecha);
 
-            if (response.success || response.status === 200) {
-                setAtenciones(response.data || []);
+            console.log('✅ Respuesta del servicio por-fecha:', response);
+            
+            if (response.success) {
+                console.log('✅ Atenciones recibidas:', response.data);
+                
+                if (response.data.length > 0) {
+                    console.log('✅ Primera atención completa:', response.data[0]);
+                    console.log('✅ Médico:', response.data[0]?.medico);
+                    console.log('✅ Nombre médico:', response.data[0]?.medico?.user?.name);
+                    console.log('✅ Especialidad:', response.data[0]?.medico?.especialidad?.nombre);
+                }
+
+                // Aplicar filtros adicionales en el frontend si es necesario
+                let atencionesFiltradas = response.data || [];
+
+                // Filtro por búsqueda de paciente
+                if (filtros.paciente_search) {
+                    const searchLower = filtros.paciente_search.toLowerCase();
+                    atencionesFiltradas = atencionesFiltradas.filter(atencion => {
+                        const nombreCompleto = `${atencion.paciente?.nombres || ''} ${atencion.paciente?.apellido_paterno || ''}`.toLowerCase();
+                        const dni = atencion.paciente?.documento_identidad || '';
+                        return nombreCompleto.includes(searchLower) || dni.includes(searchLower);
+                    });
+                }
+
+                // Filtro por estado
+                if (filtros.estado) {
+                    atencionesFiltradas = atencionesFiltradas.filter(atencion => 
+                        atencion.estado === filtros.estado
+                    );
+                }
+
+                // Filtro por médico
+                if (filtros.medico_id) {
+                    atencionesFiltradas = atencionesFiltradas.filter(atencion => 
+                        atencion.medico_id === parseInt(filtros.medico_id)
+                    );
+                }
+
+                setAtenciones(atencionesFiltradas);
             } else {
                 setAtenciones([]);
             }
         } catch (error) {
-            console.error('Error cargando atenciones:', error);
+            console.error('❌ Error cargando atenciones:', error);
             setAtenciones([]);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar las atenciones',
+                timer: 2000
+            });
         } finally {
             setLoading(false);
         }
@@ -68,26 +105,24 @@ const Atenciones = () => {
         if (recargar) cargarAtenciones();
     };
 
-    // Lógica de colores (Rojo para canceladas)
     const obtenerColorEstado = (estado, tipo = 'bg') => {
         const esCancelado = estado === 'Cancelada' || estado === 'No Asistió';
         
-        if (esCancelado) return tipo === 'bg' ? '#FEE2E2' : '#DC2626'; // Fondo rojo claro / Texto rojo oscuro
+        if (esCancelado) return tipo === 'bg' ? '#FEE2E2' : '#DC2626';
 
         const colores = {
-            'Programada': '#E0F2FE', // Azul claro
-            'En Espera': '#FEF3C7',  // Amarillo
-            'En Atención': '#F3E8FF', // Morado
-            'Atendida': '#D1FAE5',   // Verde
+            'Programada': '#E0F2FE',
+            'En Espera': '#FEF3C7',
+            'En Atención': '#F3E8FF',
+            'Atendida': '#D1FAE5',
         };
         return colores[estado] || '#F3F4F6';
     };
 
     return (
-        // USA LA CLASE CORRECTA DE TU CSS
         <div className="appointments-container fade-in">
             
-            {/* HEADER ALINEADO */}
+            {/* HEADER */}
             <div className="page-header">
                 <div>
                     <h2 className="page-title">Atenciones del Día</h2>
@@ -97,7 +132,6 @@ const Atenciones = () => {
                 </div>
                 
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    {/* Botones de Vista (Estilo inline para alinearse con tu CSS existente) */}
                     <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '4px', display: 'flex' }}>
                         <button 
                             onClick={() => setViewMode('table')}
@@ -127,7 +161,7 @@ const Atenciones = () => {
                 </div>
             </div>
 
-            {/* FILTROS (Usa tu estructura CSS exacta) */}
+            {/* FILTROS */}
             <div className="filters-card fade-in-up">
                 <div className="filters-row primary-filters">
                     <div className="filter-group">
@@ -151,7 +185,6 @@ const Atenciones = () => {
                                 placeholder="Nombre, DNI o Historia..."
                                 value={filtros.paciente_search}
                                 onChange={(e) => handleFiltroChange('paciente_search', e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && cargarAtenciones()}
                             />
                         </div>
                     </div>
@@ -160,11 +193,8 @@ const Atenciones = () => {
                         <label>Estado</label>
                         <div className="input-with-icon">
                             <Filter size={16} />
-                            <select
-                                value={filtros.estado}
-                                onChange={(e) => handleFiltroChange('estado', e.target.value)}
-                            >
-                                <option value="">Todos los estados</option>
+                            <select value={filtros.estado} onChange={(e) => handleFiltroChange('estado', e.target.value)}>
+                                <option value="">Todos</option>
                                 <option value="Programada">Programada</option>
                                 <option value="En Espera">En Espera</option>
                                 <option value="En Atención">En Atención</option>
@@ -188,12 +218,11 @@ const Atenciones = () => {
                 </div>
             ) : atenciones.length > 0 ? (
                 <>
-                    {/* VISTA: TARJETAS (Usa tus clases cards-grid y appointment-card) */}
+                    {/* VISTA: TARJETAS */}
                     {viewMode === 'cards' && (
                         <div className="cards-grid fade-in-up">
                             {atenciones.map((atencion) => (
                                 <div key={atencion.id} className="appointment-card">
-                                    {/* Tira de color lateral: Rojo si está cancelada */}
                                     <div 
                                         className="card-left-strip" 
                                         style={{ backgroundColor: obtenerColorEstado(atencion.estado, 'border') }}
@@ -213,10 +242,22 @@ const Atenciones = () => {
                                         </div>
 
                                         <div className="appt-details">
+                                            {/* ✅ MÉDICO */}
                                             <div className="detail-item">
                                                 <Stethoscope size={16} />
-                                                <span>{atencion.medico?.user?.name || atencion.medico?.nombre_completo || 'Sin médico'}</span>
+                                                <span>
+                                                    {atencion.medico?.user?.name || 'Médico sin nombre'}
+                                                </span>
                                             </div>
+
+                                            {/* ✅ ESPECIALIDAD */}
+                                            <div className="detail-item">
+                                                <Award size={16} />
+                                                <span>
+                                                    {atencion.medico?.especialidad?.nombre || 'General'}
+                                                </span>
+                                            </div>
+
                                             <div className="detail-item">
                                                 <FileText size={16} />
                                                 <span>{atencion.tipo_atencion}</span>
@@ -229,7 +270,7 @@ const Atenciones = () => {
                                             className="status-pill"
                                             style={{ 
                                                 backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
-                                                color: '#1F2937' // Texto oscuro para legibilidad
+                                                color: '#1F2937'
                                             }}
                                         >
                                             {atencion.estado}
@@ -244,24 +285,25 @@ const Atenciones = () => {
                         </div>
                     )}
 
-                    {/* VISTA: TABLA (Reutiliza clases de tabla si existen, o estilos inline simples para limpieza) */}
+                    {/* VISTA: TABLA */}
                     {viewMode === 'table' && (
                         <div className="filters-card fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
                                     <tr>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Hora</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Paciente</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Médico</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Tipo</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Estado</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '0.85rem', color: '#6B7280' }}>Acción</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Hora</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Paciente</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Médico</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Especialidad</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Tipo</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Estado</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {atenciones.map((atencion) => (
                                         <tr key={atencion.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                            <td style={{ padding: '16px 24px', color: '#374151' }}>
+                                            <td style={{ padding: '16px 24px', color: '#374151', fontWeight: 500 }}>
                                                 {atencion.hora_ingreso?.substring(0,5)}
                                             </td>
                                             <td style={{ padding: '16px 24px' }}>
@@ -272,8 +314,13 @@ const Atenciones = () => {
                                                     {atencion.paciente?.documento_identidad}
                                                 </div>
                                             </td>
+                                            {/* ✅ MÉDICO */}
+                                            <td style={{ padding: '16px 24px', color: '#4B5563', fontWeight: 500 }}>
+                                                {atencion.medico?.user?.name || 'Médico sin nombre'}
+                                            </td>
+                                            {/* ✅ ESPECIALIDAD */}
                                             <td style={{ padding: '16px 24px', color: '#4B5563' }}>
-                                                {atencion.medico?.user?.name || '---'}
+                                                {atencion.medico?.especialidad?.nombre || 'General'}
                                             </td>
                                             <td style={{ padding: '16px 24px' }}>
                                                 <span className="dni-tag">{atencion.tipo_atencion}</span>
@@ -292,7 +339,15 @@ const Atenciones = () => {
                                             <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                                                 <button 
                                                     onClick={() => handleAbrirModal(atencion)}
-                                                    style={{ border: 'none', background: 'transparent', color: '#2563EB', cursor: 'pointer' }}
+                                                    style={{ 
+                                                        border: 'none', 
+                                                        background: 'transparent', 
+                                                        color: '#2563EB', 
+                                                        cursor: 'pointer',
+                                                        transition: 'color 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.color = '#1D4ED8'}
+                                                    onMouseOut={(e) => e.target.style.color = '#2563EB'}
                                                 >
                                                     <Eye size={18} />
                                                 </button>

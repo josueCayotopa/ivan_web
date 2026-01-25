@@ -22,8 +22,9 @@ const pacienteService = {
 
       const data = await response.json();
       
+      // Corregido: Usar success o response.ok
       return {
-        success: data.status === 200,
+        success: data.success || response.ok,
         data: data.data || [],
         total: data.total || 0
       };
@@ -36,45 +37,23 @@ const pacienteService = {
   // POST /api/v1/pacientes/por-documento - Buscar por DNI
   async searchByDocument(documento) {
     try {
-      console.log('Buscando paciente con DNI:', documento); // DEBUG
-
       const response = await fetch(`${API_URL}/pacientes/por-documento`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ documento_identidad: documento })
+        body: JSON.stringify({ documento: documento }) // Ojo: Tu controller espera 'documento', no 'documento_identidad'
       });
 
       const data = await response.json();
       
-      console.log('Response búsqueda paciente:', data); // DEBUG
-      
+      // ✅ CORRECCIÓN CLAVE AQUÍ:
+      // Tu backend devuelve { success: true, data: {...} }
+      // Antes tenías `data.status === 200`, que daba falso.
       return {
-        success: data.status === 200,
+        success: data.success || response.ok,
         data: data.data
       };
     } catch (error) {
       console.error('Error buscando paciente:', error);
-      throw error;
-    }
-  },
-
-  // POST /api/v1/pacientes/show - Ver un paciente
-  async getPaciente(id) {
-    try {
-      const response = await fetch(`${API_URL}/pacientes/show`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ id })
-      });
-
-      const data = await response.json();
-      
-      return {
-        success: data.status === 200,
-        data: data.data
-      };
-    } catch (error) {
-      console.error('Error obteniendo paciente:', error);
       throw error;
     }
   },
@@ -90,10 +69,12 @@ const pacienteService = {
 
       const data = await response.json();
       
+      // ✅ CORRECCIÓN CLAVE AQUÍ TAMBIÉN:
       return {
-        success: data.status === 200,
+        success: data.success || response.ok, 
         message: data.message,
-        data: data.data
+        data: data.data,
+        errors: data.errors // Por si hay errores de validación
       };
     } catch (error) {
       console.error('Error creando paciente:', error);
@@ -101,88 +82,52 @@ const pacienteService = {
     }
   },
 
+  // ... (Mantén el resto de funciones como update, delete, etc. aplicando la misma lógica de success) ...
+  
   // POST /api/v1/pacientes/update - Actualizar paciente
   async updatePaciente(pacienteData) {
     try {
-      const response = await fetch(`${API_URL}/pacientes/update`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(pacienteData)
-      });
-
-      const data = await response.json();
-      
-      return {
-        success: data.status === 200,
-        message: data.message
-      };
-    } catch (error) {
-      console.error('Error actualizando paciente:', error);
-      throw error;
-    }
+        const response = await fetch(`${API_URL}/pacientes/update`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(pacienteData)
+        });
+        const data = await response.json();
+        return {
+            success: data.success || response.ok,
+            message: data.message
+        };
+    } catch (error) { throw error; }
   },
 
-  // POST /api/v1/pacientes/destroy - Eliminar paciente
   async deletePaciente(id) {
     try {
-      const response = await fetch(`${API_URL}/pacientes/destroy`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ id })
-      });
-
-      const data = await response.json();
-      
-      return {
-        success: data.status === 200,
-        message: data.message
-      };
-    } catch (error) {
-      console.error('Error eliminando paciente:', error);
-      throw error;
-    }
+        const response = await fetch(`${API_URL}/pacientes/destroy`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ id })
+        });
+        const data = await response.json();
+        return {
+            success: data.success || response.ok,
+            message: data.message
+        };
+    } catch (error) { throw error; }
   },
-
-  // POST /api/v1/pacientes/search - Buscar pacientes
+  
   async searchPacientes(searchTerm) {
-    try {
-      const response = await fetch(`${API_URL}/pacientes/search`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ search: searchTerm })
-      });
-
-      const data = await response.json();
-      
-      return {
-        success: data.status === 200,
-        data: data.data || []
-      };
-    } catch (error) {
-      console.error('Error buscando pacientes:', error);
-      throw error;
-    }
-  },
-
-  // POST /api/v1/pacientes/historial - Historial de un paciente
-  async getHistorial(pacienteId) {
-    try {
-      const response = await fetch(`${API_URL}/pacientes/historial`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ paciente_id: pacienteId })
-      });
-
-      const data = await response.json();
-      
-      return {
-        success: data.status === 200,
-        data: data.data
-      };
-    } catch (error) {
-      console.error('Error obteniendo historial:', error);
-      throw error;
-    }
+      try {
+        const response = await fetch(`${API_URL}/pacientes/search`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ q: searchTerm }) // Tu controller usa 'q'
+        });
+        const data = await response.json();
+        return {
+          success: data.success || response.ok,
+          data: data.data || []
+        };
+      } catch (error) { throw error; }
   }
 };
 

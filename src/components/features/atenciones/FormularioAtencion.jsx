@@ -1,144 +1,238 @@
-// src/components/atenciones/FormularioAtencion.jsx
 import React, { useState, useEffect } from 'react';
-import { X, Search, User, Calendar, Clock, Stethoscope } from 'lucide-react';
+import { X, Search, User, Calendar, Clock, Stethoscope, Briefcase } from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../../services/atencionService';
 import pacienteService from '../../../services/pacienteService';
-import medicoService from '../../../services/medicoService';
+import utilsService from '../../../services/utilsService';
+import PacienteForm from '../pacientes/PacienteForm';
 
 const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
     const esEdicion = !!atencion;
     const [loading, setLoading] = useState(false);
-    const [buscandoPaciente, setBuscandoPaciente] = useState(false);
-    const [cargandoMedicos, setCargandoMedicos] = useState(true);
-
+    
+    // Estados para selects
+    const [especialidades, setEspecialidades] = useState([]);
     const [medicos, setMedicos] = useState([]);
+    const [horariosDisponibles, setHorariosDisponibles] = useState([]);
+    
+    // Estados de carga
+    const [loadingMedicos, setLoadingMedicos] = useState(false);
+    const [loadingHorarios, setLoadingHorarios] = useState(false);
+
+    // Estados paciente
     const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
+    const [buscandoPaciente, setBuscandoPaciente] = useState(false);
+    const [buscarDni, setBuscarDni] = useState('');
+    
+    const [showPacienteModal, setShowPacienteModal] = useState(false);
 
     const [formData, setFormData] = useState({
         paciente_id: '',
+        especialidad_id: '',
         medico_id: '',
         fecha_cita: new Date().toISOString().split('T')[0],
         hora_cita: '',
-        tipo_atencion: 'Consulta',
+        tipo_atencion: 'Consulta Externa',
         tipo_cobertura: 'Particular',
         motivo_consulta: '',
         observaciones: '',
-        estado: 'pendiente'
+        estado: 'Programada'
     });
 
-    const [buscarDni, setBuscarDni] = useState('');
-
+    // ✅ CORRECCIÓN: useEffect mejorado para cargar datos en modo edición
     useEffect(() => {
-        cargarMedicos();
-
-        if (atencion) {
-            setFormData({
-                paciente_id: atencion.paciente_id || '',
-                medico_id: atencion.medico_id || '',
-                fecha_cita: atencion.fecha_cita || '',
-                hora_cita: atencion.hora_cita || '',
-                tipo_atencion: atencion.tipo_atencion || 'Consulta',
-                tipo_cobertura: atencion.tipo_cobertura || 'Particular',
-                motivo_consulta: atencion.motivo_consulta || '',
-                observaciones: atencion.observaciones || '',
-                estado: atencion.estado || 'pendiente'
-            });
-            setPacienteSeleccionado(atencion.paciente);
-        }
-    }, [atencion]);
-
-    const cargarMedicos = async () => {
-        setCargandoMedicos(true);
-        try {
-            const response = await medicoService.getMedicos(1, '', 100);
-            if (response.status === 200) {
-                setMedicos(response.data || []);
+        const cargarDataInicial = async () => {
+            console.log('🔄 Cargando datos iniciales...', { esEdicion, atencion });
+            
+            // Cargar especialidades siempre
+            const listaEsp = await utilsService.getEspecialidades();
+            if (Array.isArray(listaEsp)) {
+                setEspecialidades(listaEsp);
+                console.log('✅ Especialidades cargadas:', listaEsp.length);
             }
-        } catch (error) {
-            console.error('Error cargando médicos:', error);
-        } finally {
-            setCargandoMedicos(false);
+
+            // Si es edición, cargar los datos de la atención
+            if (atencion) {
+                console.log('📝 Modo edición - Datos de atención:', atencion);
+                
+                // ✅ Establecer paciente seleccionado
+                if (atencion.paciente) {
+                    setPacienteSeleccionado(atencion.paciente);
+                    console.log('✅ Paciente establecido:', atencion.paciente);
+                }
+
+                // ✅ Cargar médicos de la especialidad
+                const especialidadId = atencion.medico?.especialidad_id || atencion.especialidad_id;
+                if (especialidadId) {
+                    console.log('🔄 Cargando médicos de especialidad:', especialidadId);
+                    const listaMed = await utilsService.getMedicosPorEspecialidad(especialidadId);
+                    if (Array.isArray(listaMed)) {
+                        setMedicos(listaMed);
+                        console.log('✅ Médicos cargados:', listaMed.length);
+                    }
+                }
+
+                // ✅ CORRECCIÓN: Formatear fecha correctamente
+                let fechaFormateada = atencion.fecha_atencion;
+                if (fechaFormateada && fechaFormateada.includes('T')) {
+                    fechaFormateada = fechaFormateada.split('T')[0];
+                }
+
+                // ✅ Establecer datos del formulario
+                const datosFormulario = {
+                    paciente_id: atencion.paciente_id || '',
+                    especialidad_id: especialidadId || '',
+                    medico_id: atencion.medico_id || '',
+                    fecha_cita: fechaFormateada || new Date().toISOString().split('T')[0],
+                    hora_cita: atencion.hora_ingreso || '',
+                    tipo_atencion: atencion.tipo_atencion || 'Consulta Externa',
+                    tipo_cobertura: atencion.tipo_cobertura || 'Particular',
+                    motivo_consulta: atencion.motivo_consulta || '',
+                    observaciones: atencion.observaciones || '',
+                    estado: atencion.estado || 'Programada'
+                };
+
+                setFormData(datosFormulario);
+                console.log('✅ Formulario establecido:', datosFormulario);
+            }
+        };
+        
+        cargarDataInicial();
+    }, [atencion, esEdicion]);
+
+    // Cargar médicos cuando cambia la especialidad
+    useEffect(() => {
+        const cargarMedicos = async () => {
+            if (!formData.especialidad_id) {
+                setMedicos([]);
+                return;
+            }
+            
+            // No recargar si ya están cargados en modo edición
+            if (esEdicion && medicos.length > 0) return;
+
+            setLoadingMedicos(true);
+            const lista = await utilsService.getMedicosPorEspecialidad(formData.especialidad_id);
+            setMedicos(Array.isArray(lista) ? lista : []);
+            setLoadingMedicos(false);
+        };
+        
+        // Solo cargar si no es edición o si la especialidad cambió
+        if (!esEdicion) {
+            cargarMedicos();
         }
+    }, [formData.especialidad_id, esEdicion]);
+
+    // Cargar horarios disponibles
+    useEffect(() => {
+        const cargarHorarios = async () => {
+            if (!formData.medico_id || !formData.fecha_cita) {
+                setHorariosDisponibles([]);
+                return;
+            }
+            
+            setLoadingHorarios(true);
+            const slots = await utilsService.getCitasDisponibles(formData.medico_id, formData.fecha_cita);
+            setHorariosDisponibles(Array.isArray(slots) ? slots : []);
+            setLoadingHorarios(false);
+        };
+        
+        // Solo cargar horarios en modo creación o cuando cambien médico/fecha
+        if (!esEdicion || (formData.medico_id && formData.fecha_cita)) {
+            cargarHorarios();
+        }
+    }, [formData.medico_id, formData.fecha_cita, esEdicion]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const newState = { ...prev, [name]: value };
+            
+            // Limpiar campos dependientes al cambiar especialidad
+            if (name === 'especialidad_id') {
+                newState.medico_id = '';
+                newState.hora_cita = '';
+            }
+            
+            // Limpiar horario al cambiar médico
+            if (name === 'medico_id') {
+                newState.hora_cita = '';
+            }
+            
+            return newState;
+        });
     };
 
     const handleBuscarPaciente = async () => {
-        if (!buscarDni || buscarDni.length < 8) {
-            Swal.fire('Error', 'Ingrese un DNI válido (8 dígitos)', 'error');
-            return;
-        }
-
+        if (!buscarDni) return;
+        
         setBuscandoPaciente(true);
         try {
-            const response = await pacienteService.searchByDocument(buscarDni);
+            const res = await pacienteService.searchByDocument(buscarDni);
             
-            if (response.success && response.data) {
-                setPacienteSeleccionado(response.data);
-                setFormData(prev => ({ ...prev, paciente_id: response.data.id }));
+            if (res.success && res.data) {
+                setPacienteSeleccionado(res.data);
+                setFormData(prev => ({ ...prev, paciente_id: res.data.id }));
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Paciente Encontrado',
-                    text: `${response.data.nombres} ${response.data.apellido_paterno}`,
-                    timer: 2000,
+                    text: `${res.data.nombres} ${res.data.apellido_paterno}`,
+                    timer: 1000,
                     showConfirmButton: false
                 });
             } else {
                 const result = await Swal.fire({
-                    icon: 'question',
                     title: 'Paciente no encontrado',
-                    text: '¿Desea registrar un nuevo paciente?',
+                    text: `El DNI ${buscarDni} no está registrado. ¿Desea registrar un nuevo paciente?`,
+                    icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Sí, registrar',
-                    cancelButtonText: 'Cancelar'
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#3B82F6'
                 });
 
                 if (result.isConfirmed) {
-                    Swal.fire('Info', 'Por favor, registre al paciente desde el módulo de Pacientes', 'info');
+                    setShowPacienteModal(true);
                 }
             }
         } catch (error) {
-            console.error('Error buscando paciente:', error);
+            console.error(error);
             Swal.fire('Error', 'Error al buscar paciente', 'error');
         } finally {
             setBuscandoPaciente(false);
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+    const handlePacienteCreado = (pacienteNuevo) => {
+        setPacienteSeleccionado(pacienteNuevo);
+        setFormData(prev => ({ ...prev, paciente_id: pacienteNuevo.id }));
+        setShowPacienteModal(false);
+        setBuscarDni('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!pacienteSeleccionado) {
-            Swal.fire('Error', 'Debe buscar y seleccionar un paciente', 'error');
-            return;
-        }
-
-        if (!formData.medico_id) {
-            Swal.fire('Error', 'Debe seleccionar un médico', 'error');
+        
+        if (!pacienteSeleccionado || !formData.hora_cita) {
+            Swal.fire('Error', 'Complete todos los campos obligatorios', 'warning');
             return;
         }
 
         setLoading(true);
-
-        const payload = {
-            paciente_id: formData.paciente_id,
-            medico_id: parseInt(formData.medico_id),
-            fecha_cita: formData.fecha_cita,
-            hora_cita: formData.hora_cita,
-            tipo_atencion: formData.tipo_atencion,
-            tipo_cobertura: formData.tipo_cobertura,
-            motivo_consulta: formData.motivo_consulta,
-            observaciones: formData.observaciones,
-            estado: formData.estado
-        };
-
-        console.log('Enviando payload:', payload);
-
         try {
+            const payload = {
+                paciente_id: formData.paciente_id,
+                medico_id: formData.medico_id,
+                fecha_atencion: formData.fecha_cita,
+                hora_ingreso: formData.hora_cita,
+                tipo_atencion: formData.tipo_atencion,
+                tipo_cobertura: formData.tipo_cobertura,
+                motivo_consulta: formData.motivo_consulta,
+                observaciones: formData.observaciones,
+                estado: formData.estado
+            };
+
             let response;
             if (esEdicion) {
                 response = await atencionService.updateAtencion(atencion.id, payload);
@@ -146,21 +240,20 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                 response = await atencionService.createAtencion(payload);
             }
 
-            if (response.status === 200 || response.success) {
+            if (response.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: esEdicion ? 'Atención Actualizada' : 'Atención Registrada',
-                    text: response.message || 'Operación exitosa',
-                    timer: 2000,
+                    title: esEdicion ? 'Atención Actualizada' : 'Atención Creada',
+                    timer: 1500,
                     showConfirmButton: false
                 });
                 onSuccess();
             } else {
-                Swal.fire('Error', response.message || 'Error al procesar', 'error');
+                Swal.fire('Error', response.message || 'Error al guardar', 'error');
             }
         } catch (error) {
-            console.error('Error guardando atención:', error);
-            Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+            console.error(error);
+            Swal.fire('Error', 'Error de conexión', 'error');
         } finally {
             setLoading(false);
         }
@@ -168,205 +261,247 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content" style={{ maxWidth: '900px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="modal-content">
                 <div className="modal-header">
                     <h3>{esEdicion ? 'Editar Atención' : 'Nueva Atención'}</h3>
-                    <button className="btn-close" onClick={() => onClose()}>
+                    <button className="btn-close" onClick={onClose}>
                         <X size={20} />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
-                    {/* SECCIÓN: BÚSQUEDA DE PACIENTE */}
-                    <div className="form-section">
-                        <div className="section-label">
-                            <User size={16} style={{ display: 'inline', marginRight: '8px' }} />
-                            Datos del Paciente
-                        </div>
-
-                        <div className="patient-search-row">
-                            <div className="form-group">
-                                <label>DNI del Paciente *</label>
-                                <input
-                                    type="text"
-                                    value={buscarDni}
-                                    onChange={(e) => setBuscarDni(e.target.value)}
-                                    placeholder="Ingrese DNI (8 dígitos)"
-                                    maxLength={8}
-                                    disabled={esEdicion || !!pacienteSeleccionado}
-                                />
+                    
+                    {/* SECCIÓN PACIENTE */}
+                    {!esEdicion && (
+                        <div className="form-section">
+                            <div className="section-label">
+                                <User size={18} style={{marginRight:'8px'}}/> Paciente
                             </div>
-                            <button
-                                type="button"
-                                className="btn-search"
-                                onClick={handleBuscarPaciente}
-                                disabled={buscandoPaciente || esEdicion || !!pacienteSeleccionado}
-                            >
-                                <Search size={16} />
-                                {buscandoPaciente ? 'Buscando...' : 'Buscar'}
-                            </button>
+                            
+                            {!pacienteSeleccionado ? (
+                                <div className="patient-search-row">
+                                    <div className="form-group">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ingrese DNI (8 dígitos)..."
+                                            value={buscarDni}
+                                            onChange={(e) => setBuscarDni(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleBuscarPaciente()}
+                                            maxLength={15}
+                                        />
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="btn-save" 
+                                        onClick={handleBuscarPaciente}
+                                        disabled={buscandoPaciente}
+                                    >
+                                        {buscandoPaciente ? 'Buscando...' : 'Buscar'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="patient-selected-card">
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
+                                        <div className="patient-card-content">
+                                            <h4>{pacienteSeleccionado.nombres} {pacienteSeleccionado.apellido_paterno} {pacienteSeleccionado.apellido_materno}</h4>
+                                            <div className="patient-card-details">
+                                                <span>DNI: {pacienteSeleccionado.documento_identidad}</span>
+                                                <span>•</span>
+                                                <span>Tel: {pacienteSeleccionado.telefono || 'Sin teléfono'}</span>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: '#DC2626',
+                                                fontSize: '0.875rem',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline'
+                                            }}
+                                            onClick={() => {
+                                                setPacienteSeleccionado(null);
+                                                setFormData({...formData, paciente_id: ''});
+                                            }}
+                                        >
+                                            Cambiar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
+                    )}
 
-                        {pacienteSeleccionado && (
+                    {/* MOSTRAR PACIENTE EN MODO EDICIÓN */}
+                    {esEdicion && pacienteSeleccionado && (
+                        <div className="form-section">
+                            <div className="section-label">
+                                <User size={18} style={{marginRight:'8px'}}/> Paciente
+                            </div>
                             <div className="patient-selected-card">
                                 <div className="patient-card-content">
-                                    <h4>
-                                        {pacienteSeleccionado.nombres} {pacienteSeleccionado.apellido_paterno} {pacienteSeleccionado.apellido_materno}
-                                    </h4>
+                                    <h4>{pacienteSeleccionado.nombres} {pacienteSeleccionado.apellido_paterno} {pacienteSeleccionado.apellido_materno}</h4>
                                     <div className="patient-card-details">
                                         <span>DNI: {pacienteSeleccionado.documento_identidad}</span>
                                         <span>•</span>
-                                        <span>
-                                            {pacienteSeleccionado.edad ? `${pacienteSeleccionado.edad} años` : 'Edad no registrada'}
-                                        </span>
-                                        {pacienteSeleccionado.celular && (
-                                            <>
-                                                <span>•</span>
-                                                <span>Tel: {pacienteSeleccionado.celular}</span>
-                                            </>
-                                        )}
+                                        <span>Tel: {pacienteSeleccionado.telefono || 'Sin teléfono'}</span>
                                     </div>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    {/* SECCIÓN: DATOS DE LA ATENCIÓN */}
+                    {/* DATOS DE LA CITA */}
                     <div className="form-section">
                         <div className="section-label">
-                            <Calendar size={16} style={{ display: 'inline', marginRight: '8px' }} />
-                            Datos de la Atención
+                            <Calendar size={18} style={{marginRight:'8px'}}/> Datos de la Cita
                         </div>
-
+                        
                         <div className="form-grid-3">
                             <div className="form-group">
-                                <label>Médico *</label>
-                                {cargandoMedicos ? (
-                                    <select disabled>
-                                        <option>Cargando...</option>
+                                <label>Especialidad *</label>
+                                <div className="input-with-icon">
+                                    <Briefcase size={18} />
+                                    <select 
+                                        name="especialidad_id" 
+                                        value={formData.especialidad_id} 
+                                        onChange={handleChange} 
+                                        required
+                                        disabled={esEdicion}
+                                    >
+                                        <option value="">-- Seleccione --</option>
+                                        {especialidades.map(esp => (
+                                            <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+                                        ))}
                                     </select>
-                                ) : (
-                                    <select
-                                        name="medico_id"
-                                        value={formData.medico_id}
-                                        onChange={handleChange}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Médico *</label>
+                                <div className="input-with-icon">
+                                    <Stethoscope size={18} />
+                                    <select 
+                                        name="medico_id" 
+                                        value={formData.medico_id} 
+                                        onChange={handleChange} 
+                                        disabled={!formData.especialidad_id || loadingMedicos || esEdicion} 
                                         required
                                     >
-                                        <option value="">Seleccione médico</option>
-                                        {medicos.map(medico => (
-                                            <option key={medico.id} value={medico.id}>
-                                                {medico.user?.name || 'Sin nombre'} - {medico.especialidad?.nombre || 'General'}
+                                        <option value="">{loadingMedicos ? 'Cargando...' : '-- Seleccione --'}</option>
+                                        {medicos.map(med => (
+                                            <option key={med.id} value={med.id}>
+                                                {med.nombre_completo || med.user?.name || `Médico ${med.id}`}
                                             </option>
                                         ))}
                                     </select>
-                                )}
+                                </div>
                             </div>
 
                             <div className="form-group">
-                                <label>Fecha de Cita *</label>
-                                <input
-                                    type="date"
-                                    name="fecha_cita"
-                                    value={formData.fecha_cita}
-                                    onChange={handleChange}
-                                    min={new Date().toISOString().split('T')[0]}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Hora de Cita *</label>
-                                <input
-                                    type="time"
-                                    name="hora_cita"
-                                    value={formData.hora_cita}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                <label>Fecha *</label>
+                                <div className="input-with-icon">
+                                    <Calendar size={18} />
+                                    <input 
+                                        type="date" 
+                                        name="fecha_cita" 
+                                        value={formData.fecha_cita} 
+                                        onChange={handleChange} 
+                                        required 
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="form-grid-3">
+                        <div className="form-grid-3" style={{ marginTop: '16px' }}>
                             <div className="form-group">
-                                <label>Tipo de Atención</label>
-                                <select
-                                    name="tipo_atencion"
-                                    value={formData.tipo_atencion}
+                                <label>Horario *</label>
+                                <div className="input-with-icon">
+                                    <Clock size={18} />
+                                    <select 
+                                        name="hora_cita" 
+                                        value={formData.hora_cita} 
+                                        onChange={handleChange} 
+                                        disabled={!formData.medico_id || loadingHorarios} 
+                                        required
+                                    >
+                                        <option value="">{loadingHorarios ? 'Buscando...' : '-- Hora --'}</option>
+                                        {esEdicion && formData.hora_cita && (
+                                            <option value={formData.hora_cita}>
+                                                {formData.hora_cita.substring(0,5)} (Actual)
+                                            </option>
+                                        )}
+                                        {horariosDisponibles.map((hora, idx) => (
+                                            <option key={idx} value={hora}>{hora}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tipo Atención</label>
+                                <select 
+                                    name="tipo_atencion" 
+                                    value={formData.tipo_atencion} 
                                     onChange={handleChange}
                                 >
-                                    <option value="Consulta">Consulta</option>
-                                    <option value="Emergencia">Emergencia</option>
-                                    <option value="Control">Control</option>
-                                    <option value="Procedimiento">Procedimiento</option>
+                                    <option>Consulta Externa</option>
+                                    <option>Procedimiento</option>
+                                    <option>Control</option>
                                 </select>
                             </div>
 
                             <div className="form-group">
-                                <label>Tipo de Cobertura</label>
-                                <select
-                                    name="tipo_cobertura"
-                                    value={formData.tipo_cobertura}
+                                <label>Cobertura</label>
+                                <select 
+                                    name="tipo_cobertura" 
+                                    value={formData.tipo_cobertura} 
                                     onChange={handleChange}
                                 >
-                                    <option value="Particular">Particular</option>
-                                    <option value="SIS">SIS</option>
-                                    <option value="EsSalud">EsSalud</option>
-                                    <option value="Seguro Privado">Seguro Privado</option>
+                                    <option>Particular</option>
+                                    <option>SIS</option>
+                                    <option>EsSalud</option>
                                 </select>
                             </div>
-
-                            <div className="form-group">
-                                <label>Estado</label>
-                                <select
-                                    name="estado"
-                                    value={formData.estado}
-                                    onChange={handleChange}
-                                >
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="confirmada">Confirmada</option>
-                                    <option value="en_atencion">En Atención</option>
-                                    <option value="atendida">Atendida</option>
-                                    <option value="cancelada">Cancelada</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Motivo de Consulta</label>
-                            <textarea
-                                name="motivo_consulta"
-                                value={formData.motivo_consulta}
-                                onChange={handleChange}
-                                rows="3"
-                                placeholder="Describa el motivo de la consulta..."
-                                style={{ width: '100%', resize: 'vertical' }}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Observaciones</label>
-                            <textarea
-                                name="observaciones"
-                                value={formData.observaciones}
-                                onChange={handleChange}
-                                rows="2"
-                                placeholder="Observaciones adicionales..."
-                                style={{ width: '100%', resize: 'vertical' }}
-                            />
                         </div>
                     </div>
 
-                    {/* FOOTER */}
+                    <div className="form-group">
+                        <label>Motivo</label>
+                        <textarea 
+                            name="motivo_consulta" 
+                            value={formData.motivo_consulta} 
+                            onChange={handleChange} 
+                            rows="2" 
+                            style={{width:'100%'}} 
+                            placeholder="Motivo de consulta..."
+                        />
+                    </div>
+
                     <div className="modal-footer">
-                        <button type="button" className="btn-cancel" onClick={() => onClose()}>
+                        <button type="button" className="btn-cancel" onClick={onClose}>
                             Cancelar
                         </button>
-                        <button type="submit" className="btn-save" disabled={loading || !pacienteSeleccionado}>
-                            {loading ? 'Guardando...' : esEdicion ? 'Actualizar' : 'Registrar Atención'}
+                        <button 
+                            type="submit" 
+                            className="btn-save" 
+                            disabled={loading || !pacienteSeleccionado || !formData.hora_cita}
+                        >
+                            {loading ? 'Procesando...' : esEdicion ? 'Actualizar' : 'Agendar'}
                         </button>
                     </div>
                 </form>
             </div>
+
+            {/* MODAL DE PACIENTE */}
+            {showPacienteModal && (
+                <PacienteForm 
+                    dniInicial={buscarDni}
+                    onClose={() => setShowPacienteModal(false)}
+                    onSuccess={handlePacienteCreado}
+                />
+            )}
         </div>
     );
 };

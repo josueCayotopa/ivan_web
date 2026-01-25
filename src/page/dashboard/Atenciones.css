@@ -1,4 +1,4 @@
-/* Appointments.css - Estilos completos */
+/* Appointments.css - Estilos completos CORREGIDOS */
 
 .appointments-container {
     padding: 30px;
@@ -86,6 +86,7 @@
     letter-spacing: 0.03em;
 }
 
+/* ✅ CORRECCIÓN CRÍTICA: Iconos dentro de inputs */
 .input-with-icon {
     position: relative;
     display: flex;
@@ -97,6 +98,7 @@
     left: 12px;
     color: #9CA3AF;
     z-index: 1;
+    pointer-events: none; /* ✅ AGREGADO: Evita que el icono capture clicks */
 }
 
 .filter-group input,
@@ -219,6 +221,12 @@
     gap: 8px;
     font-size: 0.9rem;
     color: #4B5563;
+}
+
+/* ✅ CORRECCIÓN: Iconos en detail-item */
+.detail-item svg {
+    flex-shrink: 0; /* ✅ Evita que el icono se comprima */
+    min-width: 16px;
 }
 
 .card-actions {
@@ -381,6 +389,25 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: #4B5563;
+}
+
+/* ✅ CORRECCIÓN: Iconos dentro de form-group */
+.form-group .input-with-icon {
+    position: relative;
+}
+
+.form-group .input-with-icon svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+    pointer-events: none; /* ✅ Evita que el icono capture clicks */
+}
+
+.form-group .input-with-icon input,
+.form-group .input-with-icon select {
+    padding-left: 40px !important;
 }
 
 .form-group input,
