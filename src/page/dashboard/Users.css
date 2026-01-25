@@ -1,0 +1,382 @@
+/* Users.css - Reutiliza conceptos de Roles.css pero añade specificidades */
+
+.users-container {
+    padding: 20px;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #6B7280;
+    font-weight: bold;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.role-tag {
+    background-color: #F3F4F6;
+    color: #374151;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    border: 1px solid #E5E7EB;
+}
+
+.text-muted {
+    color: #9CA3AF;
+    font-size: 0.9em;
+}
+
+.error-alert {
+    background-color: #FDE8E8;
+    color: #9B1C1C;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #FBD5D5;
+}
+
+.loading-state {
+    padding: 40px;
+    text-align: center;
+    color: #6B7280;
+    font-size: 1.1rem;
+}
+
+/* Importamos estilos base de tabla si es necesario, o los repetimos para asegurar independencia */
+/* Copia de Roles.css para asegurar consistencia si Roles.css no carga globalmente */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin: 0;
+}
+
+.btn-create {
+    background-color: #FFC107;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(255, 193, 7, 0.2);
+    transition: 0.2s;
+}
+
+.btn-create:hover {
+    background-color: #FFB300;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    overflow-x: auto;
+    /* Para tablas anchas */
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.custom-table th {
+    background-color: #F9FAFB;
+    text-align: left;
+    padding: 18px 24px;
+    color: #6B7280;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.custom-table td {
+    padding: 20px 24px;
+    border-bottom: 1px solid #F3F4F6;
+    color: #374151;
+    font-size: 1rem;
+    vertical-align: middle;
+}
+
+.custom-table tr:hover {
+    background-color: #FFFDF5;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background-color: #DEF7EC;
+    color: #03543F;
+}
+
+.status-badge.inactive {
+    background-color: #FDE8E8;
+    color: #9B1C1C;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    color: #6B7280;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background-color: #F3F4F6;
+    color: #374151;
+}
+
+.btn-icon.edit:hover {
+    color: #F59E0B;
+}
+
+.btn-icon.delete:hover {
+    color: #EF4444;
+}
+
+.font-bold {
+    font-weight: 600;
+}
+
+/* MODAL STYLES (Moved from Users.jsx) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.25rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #FFC107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+.modal-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.btn-cancel {
+    background: white;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-save {
+    background: #FFC107;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-save:hover {
+    background: #FFB300;
+}
+
+/* Role Selection Styles */
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.role-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: white;
+}
+
+.role-card:hover {
+    background: #FFFDF5;
+    border-color: #FFC107;
+}
+
+.role-card.selected {
+    background: #FFF8E1;
+    border-color: #FFC107;
+    color: #B45309;
+}
+
+.check-icon {
+    margin-left: auto;
+    color: #FFC107;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* RESPONSIVE TABLES & FORMS */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .btn-create {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .table-container {
+        border-radius: 8px;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    /* Modal Responsive */
+    .modal-content {
+        width: 95% !important;
+        padding: 1.5rem !important;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr !important;
+        /* Stack columns */
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+}

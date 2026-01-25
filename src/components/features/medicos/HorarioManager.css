@@ -1,0 +1,91 @@
+/* src/components/features/medicos/HorarioManager.css */
+
+.horario-modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 550px;
+}
+
+.horario-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.horario-tab {
+    background: none;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid transparent;
+}
+
+.horario-tab.active {
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Lista de horarios */
+.horarios-list-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.horarios-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.horario-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.horario-icon {
+    color: #4f46e5;
+    background: #e0e7ff;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.horario-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.horario-info strong {
+    font-size: 0.95rem;
+    color: #1f2937;
+}
+
+.horario-info span {
+    font-size: 0.9rem;
+    color: #374151;
+}

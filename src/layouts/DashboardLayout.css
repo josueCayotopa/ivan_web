@@ -1,0 +1,326 @@
+/* Dashboard Layout Global */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    background-color: #F5F7FA;
+    overflow: hidden;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 320px;
+    /* Aumentado de 280px a 320px */
+    background-color: #FFFFFF;
+    /* Sidebar Blanco */
+    border-right: 1px solid #E0E0E0;
+    /* Borde suave */
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    position: relative;
+    z-index: 10;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar.closed {
+    width: 80px;
+}
+
+.sidebar-header {
+    height: 180px;
+    /* Aumentado drásticamente para el logo (era 120px) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.sidebar-logo {
+    max-height: 150px;
+    /* Logo Gigante (era 90px) */
+    max-width: 95%;
+    object-fit: contain;
+    /* Sin filtro drop-shadow */
+}
+
+.sidebar.closed .sidebar-logo {
+    display: none;
+}
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-left: 15px;
+    /* Espacio para el efecto de curva */
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-nav li {
+    position: relative;
+}
+
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    text-decoration: none;
+    color: #8C8C8C;
+    /* Texto por defecto gris suave */
+    font-weight: 500;
+    font-size: 1.15rem;
+    /* Letra un poco más grande también */
+    border-radius: 30px 0 0 30px;
+    /* Curva a la izquierda */
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav li a:hover {
+    background-color: #F8F9FA;
+    color: #4A4A4A;
+}
+
+/* ESTADO ACTIVO: Dorado con texto blanco */
+.sidebar-nav li a.active {
+    background-color: #FFC107;
+    /* Dorado */
+    color: #FFFFFF;
+    /* Texto Blanco */
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
+    /* Sombra dorada */
+}
+
+.sidebar-nav .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    /* Iconos más grandes */
+    margin-right: 15px;
+    min-width: 24px;
+}
+
+.sidebar-nav .label {
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.sidebar.closed .label,
+.sidebar.closed .section-title,
+.sidebar.closed .user-role {
+    opacity: 0;
+    display: none;
+}
+
+.section-title {
+    font-size: 0.8rem;
+    color: #9E9E9E;
+    /* Gris suave para títulos */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 25px 0 10px 25px;
+    font-weight: 800;
+    opacity: 1;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+}
+
+.user-role {
+    font-size: 0.9rem;
+    color: #FFC107;
+    font-weight: 700;
+    background: #FFF8E1;
+    padding: 6px 16px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* Header Styles */
+.dashboard-header {
+    height: 70px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #4A4A4A;
+}
+
+.header-title {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #333;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: right;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.user-avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    background-color: #FFC107;
+    color: #FFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.btn-logout {
+    background: none;
+    border: 1px solid #E0E0E0;
+    color: #D32F2F;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: #FFEBEE;
+    border-color: #FFCDD2;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* Enable vertical scroll for main content */
+    height: 100vh;
+    /* Ensure it takes full height to allow internal scroll */
+}
+
+.content-wrapper {
+    flex: 1;
+    padding: 30px;
+    /* Consistent padding */
+
+
+    /* RESPONSIVE QUERIES */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            position: relative;
+        }
+
+        .sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            height: 100%;
+            transform: translateX(-100%);
+            /* Oculto por defecto en móvil */
+            width: 280px !important;
+            /* Ancho fijo en móvil */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Cuando añadamos clase 'open' en móvil, se desliza */
+        .dashboard-container.sidebar-open .sidebar {
+            transform: translateX(0);
+        }
+
+        .dashboard-container.sidebar-closed .sidebar {
+            transform: translateX(-100%);
+            width: 0;
+        }
+
+        /* Main content ocupa todo siempre */
+        .main-content {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+
+        .header-left {
+            gap: 10px;
+        }
+
+        .header-title {
+            font-size: 1rem;
+            display: none;
+            /* Ahorrar espacio en muy pequeños */
+        }
+
+        .content-wrapper {
+            padding: 15px;
+            /* Menos padding */
+        }
+
+        /* Overlay para cerrar al clickear fuera */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            display: none;
+        }
+
+        .dashboard-container.sidebar-open .sidebar-overlay {
+            display: block;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sidebar {
+            width: 260px !important;
+        }
+
+        .header-right .user-name {
+            display: none;
+        }
+    }
+}

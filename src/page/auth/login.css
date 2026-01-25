@@ -1,0 +1,343 @@
+/* src/page/auth/login.css */
+/* Login - Diseño moderno para Clínica Dr. Ivan Pareja */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Variables */
+:root {
+  --primary-gold: #FFC107;
+  --primary-gold-dark: #FFB300;
+  --text-dark: #1E293B;
+  --text-grey: #4A4A4A;
+  --text-light-grey: #94A3B8;
+  --bg-light: #F5F7FA;
+  --white: #FFFFFF;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --border-radius: 12px;
+  --error-color: #EF4444;
+  --error-bg: #FEE2E2;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #F5F7FA 0%, #E5E7EB 100%);
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+/* Container principal */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Card del login */
+.login-card {
+  background: var(--white);
+  padding: 50px 40px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Sección del logo */
+.logo-section {
+  margin-bottom: 35px;
+}
+
+.login-logo {
+  max-width: 180px;
+  height: auto;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+  transition: transform 0.3s ease;
+}
+
+.login-logo:hover {
+  transform: scale(1.05);
+}
+
+.login-subtitle {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* Formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+/* Mensaje de error */
+.error-message {
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  border-left: 4px solid var(--error-color);
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+/* Form groups */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.form-group input {
+  padding: 14px 16px;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  outline: none;
+  background: var(--white);
+}
+
+.form-group input:focus {
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
+  background: #FFFEF7;
+}
+
+.form-group input::placeholder {
+  color: #CBD5E1;
+}
+
+/* Footer del formulario */
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+
+.forgot-password {
+  font-size: 0.875rem;
+  color: var(--text-light-grey);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+
+.forgot-password:hover {
+  color: var(--primary-gold-dark);
+  text-decoration: underline;
+}
+
+/* Botón de login */
+.btn-login {
+  background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%);
+  color: var(--white);
+  border: none;
+  padding: 15px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.btn-login:hover {
+  background: linear-gradient(135deg, var(--primary-gold-dark) 0%, #FFA000 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.btn-login:disabled {
+  background: #E5E7EB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Link de registro */
+.register-link {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.register-link span {
+  color: var(--text-light-grey);
+}
+
+.register-link a {
+  color: var(--primary-gold);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+  transition: color 0.2s ease;
+}
+
+.register-link a:hover {
+  color: var(--primary-gold-dark);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 40px 30px;
+    max-width: 100%;
+  }
+
+  .login-logo {
+    max-width: 150px;
+  }
+
+  .login-subtitle {
+    font-size: 1.3rem;
+  }
+
+  .form-group input {
+    padding: 13px 14px;
+    font-size: 0.95rem;
+  }
+
+  .btn-login {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 15px;
+  }
+
+  .login-card {
+    padding: 35px 25px;
+  }
+
+  .login-logo {
+    max-width: 130px;
+  }
+
+  .login-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .btn-login {
+    padding: 13px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animación de carga en el botón */
+.btn-login.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-login.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-left: -10px;
+  margin-top: -10px;
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Estilos adicionales para campos con error */
+.form-group.error input {
+  border-color: var(--error-color);
+}
+
+.form-group.error input:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}

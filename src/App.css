@@ -1,0 +1,255 @@
+/* Global Clean Reset & Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #4F46E5;
+    --secondary-color: #64748B;
+    --bg-color: #F3F4F6;
+    --card-bg: #ffffff;
+    --text-dark: #1E293B;
+    --text-light: #94A3B8;
+    --success: #10B981;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================================
+   STANDARD CARD & TABLE DESIGN SYSTEM
+   ========================================= */
+
+/* Main Container for Tables to prevent overflowing */
+.table-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 2px;
+    /* Small padding wrapper */
+    margin-top: 20px;
+    overflow-x: auto;
+    /* Allow horizontal scroll on mobile */
+    width: 100%;
+}
+
+/* The Table Itself */
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    /* Allows border-radius on rows/cells */
+    border-spacing: 0;
+    min-width: 800px;
+    /* Force minimum width to prevent crushing columns */
+}
+
+/* Table Head */
+.custom-table thead {
+    background-color: #F8FAFC;
+}
+
+.custom-table th {
+    padding: 16px 24px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary-color);
+    border-bottom: 2px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+/* Table Body */
+.custom-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #F1F5F9;
+}
+
+.custom-table td {
+    padding: 16px 24px;
+    vertical-align: middle;
+    border-bottom: 1px solid #E2E8F0;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+/* Last row border removal for clean look */
+.custom-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Specific Columns Styling to avoid 'merged' look */
+.custom-table td.font-bold {
+    font-weight: 600;
+    color: #111827;
+}
+
+.text-muted {
+    color: #94A3B8;
+    font-size: 0.9rem;
+}
+
+/* Badges and Pills */
+.status-pill,
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-pill.active,
+.status-badge.active {
+    background-color: #D1FAE5;
+    color: #059669;
+}
+
+.status-pill.inactive,
+.status-badge.inactive {
+    background-color: #FEE2E2;
+    color: #DC2626;
+}
+
+.status-pill.pendiente {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+
+/* Actions Column alignment */
+.custom-table td .actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-icon {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background-color: #F8FAFC;
+    transform: translateY(-1px);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-icon.delete:hover {
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+/* Page Headers */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+}
+
+.page-subtitle {
+    color: #64748B;
+    margin-top: 4px;
+    font-size: 0.95rem;
+}
+
+/* Buttons */
+.btn-create {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+.btn-create:hover {
+    background-color: #4338CA;
+    transform: translateY(-1px);
+}
+
+/* Input Styles Standardization */
+input,
+select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsiveness Fixes */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-create {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Force table scroll with shadow hint */
+    .table-container {
+        box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, 0.1);
+    }
+}

@@ -1,0 +1,31 @@
+/* src/page/dashboard/Medicos.css */
+/* Reutilizamos la base de Users.css */
+
+.medicos-container {
+    padding: 20px;
+}
+
+/* ... (Copia aquí todo el contenido de Users.css que no sea específico de .users-container) ... */
+/* Asegúrate de tener .custom-table, .modal-overlay, .btn-create, etc. disponibles */
+
+/* Estilos específicos para el calendario/horarios si los necesitas */
+.tab-group {
+    display: flex;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.tab-btn.active {
+    color: #FFC107; /* Tu color primario */
+    border-bottom-color: #FFC107;
+}
