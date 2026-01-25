@@ -26,7 +26,7 @@ const medicoService = {
       });
 
       const data = await response.json();
-      
+
       return {
         status: response.ok ? 200 : 400,
         data: data.data || data,
@@ -47,7 +47,7 @@ const medicoService = {
       });
 
       const data = await response.json();
-      
+
       return {
         status: data.success ? 200 : 404,
         data: data.data
@@ -67,7 +67,7 @@ const medicoService = {
       });
 
       const data = await response.json();
-      
+
       return {
         status: data.success ? 200 : 400,
         message: data.message,
@@ -88,7 +88,7 @@ const medicoService = {
       });
 
       const data = await response.json();
-      
+
       return {
         status: data.success ? 200 : 400,
         message: data.message
@@ -99,23 +99,28 @@ const medicoService = {
   },
 
   // PATCH /api/v1/medicos/{id}/toggle-status
-  async toggleStatus(id) {
+  async toggleStatus(id, status) {
     try {
       const response = await fetch(`${API_URL}/medicos/${id}/toggle-status`, {
-        method: 'PATCH',
-        headers: getAuthHeaders()
+        method: 'PATCH', // O 'POST', según tengas definido en tu api.php (tu controlador dice PATCH)
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          status: status // ✅ Aquí enviamos el campo que pide el Backend
+        })
       });
 
       const data = await response.json();
-      
-      return {
-        status: data.success ? 200 : 400,
-        message: data.message
-      };
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al cambiar estado');
+      }
+
+      return data;
     } catch (error) {
+      console.error('Error toggling status:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default medicoService;

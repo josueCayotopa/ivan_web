@@ -26,7 +26,7 @@ const Medicos = () => {
         setLoading(true);
         try {
             // Asumiendo paginación 1, búsqueda vacía, 100 registros (o ajusta tu paginación)
-            const response = await medicoService.getMedicos(1, '', 100);
+            const response = await medicoService.getMedicos(1, '', 20);
             if (response.status === 200) {
                 // Ajusta esto según si tu API devuelve data.data o data array directo
                 setMedicos(Array.isArray(response.data) ? response.data : response.data.data || []);
@@ -57,7 +57,12 @@ const Medicos = () => {
     };
 
     const handleToggleStatus = async (medico) => {
-        const action = medico.estado === 1 ? 'Desactivar' : 'Activar';
+        // CORREGIDO: Usamos 'status' (booleano) en lugar de 'estado' (1/0)
+        const isActive = medico.status;
+
+        const action = isActive ? 'Desactivar' : 'Activar';
+        const newStatus = !isActive; // Simplemente invertimos el booleano
+
         const result = await Swal.fire({
             title: `¿${action} médico?`,
             text: `El médico ${medico.nombres} será ${action.toLowerCase()}do.`,
@@ -70,7 +75,8 @@ const Medicos = () => {
 
         if (result.isConfirmed) {
             try {
-                await medicoService.toggleStatus(medico.id);
+                // Enviamos el nuevo status
+                await medicoService.toggleStatus(medico.id, newStatus);
                 loadData();
                 Swal.fire('Actualizado', `El estado ha sido cambiado.`, 'success');
             } catch (err) {
@@ -96,7 +102,7 @@ const Medicos = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <div className="search-box" style={{position: 'relative'}}>
+                    <div className="search-box" style={{ position: 'relative' }}>
                         <input
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
@@ -140,13 +146,13 @@ const Medicos = () => {
                             {filteredMedicos.length > 0 ? filteredMedicos.map((medico) => (
                                 <tr key={medico.id}>
                                     <td className="font-bold">
-                                        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                             <div className="avatar-circle">
                                                 <Stethoscope size={20} />
                                             </div>
                                             <div>
                                                 <div>{medico.nombres} {medico.apellidos}</div>
-                                                <div className="text-muted" style={{fontSize:'0.8em'}}>{medico.email}</div>
+                                                <div className="text-muted" style={{ fontSize: '0.8em' }}>{medico.email}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -156,30 +162,32 @@ const Medicos = () => {
                                         </span>
                                     </td>
                                     <td>
-                                        <div style={{fontSize:'0.9em'}}>CMP: {medico.cmp}</div>
-                                        {medico.rne && <div className="text-muted" style={{fontSize:'0.8em'}}>RNE: {medico.rne}</div>}
+                                        <div style={{ fontSize: '0.9em' }}>CMP: {medico.cmp}</div>
+                                        {medico.rne && <div className="text-muted" style={{ fontSize: '0.8em' }}>RNE: {medico.rne}</div>}
                                     </td>
                                     <td>{medico.telefono || '-'}</td>
+                                    {/* AHORA (CORRECTO): usa medico.status (booleano) */}
                                     <td>
-                                        <span className={`status-badge ${medico.estado === 1 ? 'active' : 'inactive'}`}>
-                                            {medico.estado === 1 ? 'Activo' : 'Inactivo'}
+                                        <span className={`status-badge ${medico.status ? 'true' : 'false'}`}>
+                                            {medico.status ? 'Activo' : 'Inactivo'}
                                         </span>
                                     </td>
                                     <td>
                                         <div className="actions">
-                                            <button className="btn-icon edit" onClick={() => handleOpenHorario(medico)} title="Gestionar Horarios" style={{color:'#6366f1'}}>
+                                            <button className="btn-icon edit" onClick={() => handleOpenHorario(medico)} title="Gestionar Horarios" style={{ color: '#6366f1' }}>
                                                 <Calendar size={18} />
                                             </button>
                                             <button className="btn-icon edit" onClick={() => handleOpenForm(medico)} title="Editar">
                                                 <Edit size={18} />
                                             </button>
                                             <button
-                                                className={`btn-icon ${medico.estado === 1 ? 'delete' : 'edit'}`}
+                                                className={`btn-icon ${medico.status ? 'delete' : 'edit'}`}
                                                 onClick={() => handleToggleStatus(medico)}
-                                                title={medico.estado === 1 ? "Desactivar" : "Activar"}
-                                                style={{ color: medico.estado === 1 ? '#ef4444' : '#22c55e' }}
+                                                title={medico.status ? "Desactivar" : "Activar"}
+                                                style={{ color: medico.status ? '#ef4444' : '#22c55e' }}
                                             >
-                                                {medico.estado === 1 ? <Ban size={18} /> : <CheckCircle size={18} />}
+                                                {/* CORREGIDO: Usamos medico.status */}
+                                                {medico.status ? <Ban size={18} /> : <CheckCircle size={18} />}
                                             </button>
                                         </div>
                                     </td>
@@ -198,16 +206,16 @@ const Medicos = () => {
 
             {/* Modales Inyectados */}
             {showFormModal && (
-                <MedicoForm 
-                    medico={selectedMedico} 
-                    onClose={() => handleCloseModals(true)} 
+                <MedicoForm
+                    medico={selectedMedico}
+                    onClose={() => handleCloseModals(true)}
                 />
             )}
 
             {showHorarioModal && (
-                <HorarioManager 
-                    medico={selectedMedico} 
-                    onClose={() => handleCloseModals(false)} 
+                <HorarioManager
+                    medico={selectedMedico}
+                    onClose={() => handleCloseModals(false)}
                 />
             )}
         </div>

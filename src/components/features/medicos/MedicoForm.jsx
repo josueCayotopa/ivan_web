@@ -16,6 +16,7 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
         apellidos: '',
         dni: '',
         cmp: '',
+        username: '',
         email: '',
         password: '',
         rne: '',
@@ -49,6 +50,7 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
                 apellidos: apellidoInit,
                 email: medico.user?.email || '',
                 password: '',
+                username: medico.user?.username || '',
                 id: medico.id,
                 dni: medico.documento_identidad || '',
                 cmp: medico.numero_colegiatura || '',
@@ -68,7 +70,7 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
             console.log('Cargando especialidades...'); // DEBUG
             const response = await especialidadService.getEspecialidadesActivas();
             console.log('Response especialidades:', response); // DEBUG
-            
+
             if (response.status === 200 && response.data) {
                 setEspecialidades(response.data);
                 console.log('Especialidades cargadas:', response.data.length); // DEBUG
@@ -98,6 +100,7 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
         const payload = {
             nombre_completo: nombreCompleto,
             email: formData.email,
+            username: formData.username,
             telefono: formData.telefono,
             documento_identidad: formData.dni,
             numero_colegiatura: formData.cmp,
@@ -112,7 +115,6 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
         if (!isEditing && formData.password) {
             payload.password = formData.password;
         }
-
         console.log('Enviando payload:', payload); // DEBUG
 
         try {
@@ -174,7 +176,22 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
                                 required
                             />
                         </div>
-
+                        <div className="form-group">
+                            <label>Nombre de Usuario *</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                placeholder="Ej: drjuanperez"
+                                required
+                                pattern="^[a-zA-Z0-9_-]+$" // Validación visual para evitar errores
+                                title="Solo letras, números, guiones y guiones bajos (sin espacios ni puntos)"
+                            />
+                            <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                Sin espacios ni puntos. Ej: juan_perez
+                            </small>
+                        </div>
                         {!isEditing && (
                             <div className="form-group">
                                 <label>Contraseña (Opcional)</label>
@@ -219,10 +236,10 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
                                     <option>Cargando...</option>
                                 </select>
                             ) : (
-                                <select 
-                                    name="id_especialidad" 
-                                    value={formData.id_especialidad} 
-                                    onChange={handleChange} 
+                                <select
+                                    name="id_especialidad"
+                                    value={formData.id_especialidad}
+                                    onChange={handleChange}
                                     required
                                 >
                                     <option value="">Seleccione...</option>
@@ -242,22 +259,22 @@ const MedicoForm = ({ medico, onClose, onSuccess }) => {
 
                         <div className="form-group">
                             <label>Fecha Nacimiento</label>
-                            <input 
-                                type="date" 
-                                name="fecha_nacimiento" 
-                                value={formData.fecha_nacimiento} 
-                                onChange={handleChange} 
+                            <input
+                                type="date"
+                                name="fecha_nacimiento"
+                                value={formData.fecha_nacimiento}
+                                onChange={handleChange}
                             />
                         </div>
                     </div>
 
                     <div className="form-group" style={{ marginTop: '1rem' }}>
                         <label>Dirección</label>
-                        <input 
-                            name="direccion" 
-                            value={formData.direccion} 
-                            onChange={handleChange} 
-                            style={{ width: '100%' }} 
+                        <input
+                            name="direccion"
+                            value={formData.direccion}
+                            onChange={handleChange}
+                            style={{ width: '100%' }}
                         />
                     </div>
 

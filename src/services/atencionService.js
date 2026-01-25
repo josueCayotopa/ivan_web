@@ -72,6 +72,27 @@ const atencionService = {
       throw error;
     }
   },
+  async getAtencionesPorFecha(fecha) {
+    try {
+      const response = await fetch(`${API_URL}/atenciones/por-fecha`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ fecha: fecha }) // Enviamos la fecha seleccionada
+      });
+
+      const jsonResponse = await response.json();
+
+      return {
+        success: response.ok,
+        // Tu controlador devuelve: { success: true, count: X, data: [...] }
+        data: jsonResponse.data || [], 
+        count: jsonResponse.count || 0
+      };
+    } catch (error) {
+      console.error('Error fetching atenciones por fecha:', error);
+      throw error;
+    }
+  },
 
   // POST /api/v1/atenciones/hoy - Atenciones de hoy
   async getAtencionesHoy() {

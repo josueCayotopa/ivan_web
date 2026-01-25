@@ -1,16 +1,21 @@
-// src/page/dashboard/Atenciones.jsx
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Stethoscope, FileText, Plus, Search, Filter } from 'lucide-react';
+import { 
+    Calendar, Clock, User, Stethoscope, FileText, Plus, 
+    Search, Filter, LayoutGrid, List, Eye 
+} from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../services/atencionService.js';
 import FormularioAtencion from '../../components/features/atenciones/FormularioAtencion';
-import './Atenciones.css';
+import './Atenciones.css'; // Asegúrate de que este archivo tenga el contenido que subiste
 
 const Atenciones = () => {
     const [atenciones, setAtenciones] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedAtencion, setSelectedAtencion] = useState(null);
+    
+    // Estado para la vista: 'cards' (Tarjetas) o 'table' (Tabla)
+    const [viewMode, setViewMode] = useState('cards');
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -27,19 +32,22 @@ const Atenciones = () => {
     const cargarAtenciones = async () => {
         setLoading(true);
         try {
+            // Usamos el endpoint que soporta búsqueda por fecha
             const response = await atencionService.getAtenciones(1, {
                 fecha: filtros.fecha,
-                ...(filtros.paciente_search && { paciente: filtros.paciente_search }),
+                ...(filtros.paciente_search && { search: filtros.paciente_search }), // Ajustado a 'search' genérico
                 ...(filtros.medico_id && { medico_id: filtros.medico_id }),
                 ...(filtros.estado && { estado: filtros.estado })
             });
 
-            if (response.status === 200 || response.success) {
+            if (response.success || response.status === 200) {
                 setAtenciones(response.data || []);
+            } else {
+                setAtenciones([]);
             }
         } catch (error) {
             console.error('Error cargando atenciones:', error);
-            Swal.fire('Error', 'No se pudieron cargar las atenciones', 'error');
+            setAtenciones([]);
         } finally {
             setLoading(false);
         }
@@ -49,59 +57,77 @@ const Atenciones = () => {
         setFiltros(prev => ({ ...prev, [campo]: valor }));
     };
 
-    const handleBuscar = () => {
-        cargarAtenciones();
-    };
-
     const handleAbrirModal = (atencion = null) => {
         setSelectedAtencion(atencion);
         setShowModal(true);
     };
 
-    const handleCerrarModal = (debeRecargar = false) => {
+    const handleCerrarModal = (recargar = false) => {
         setShowModal(false);
         setSelectedAtencion(null);
-        if (debeRecargar) {
-            cargarAtenciones();
-        }
+        if (recargar) cargarAtenciones();
     };
 
-    const obtenerColorEstado = (estado) => {
+    // Lógica de colores (Rojo para canceladas)
+    const obtenerColorEstado = (estado, tipo = 'bg') => {
+        const esCancelado = estado === 'Cancelada' || estado === 'No Asistió';
+        
+        if (esCancelado) return tipo === 'bg' ? '#FEE2E2' : '#DC2626'; // Fondo rojo claro / Texto rojo oscuro
+
         const colores = {
-            'pendiente': '#FEF3C7',
-            'confirmada': '#DEF7EC',
-            'en_atencion': '#E0E7FF',
-            'atendida': '#D1FAE5',
-            'cancelada': '#FEE2E2'
+            'Programada': '#E0F2FE', // Azul claro
+            'En Espera': '#FEF3C7',  // Amarillo
+            'En Atención': '#F3E8FF', // Morado
+            'Atendida': '#D1FAE5',   // Verde
         };
         return colores[estado] || '#F3F4F6';
     };
 
-    const obtenerTextoEstado = (estado) => {
-        const textos = {
-            'pendiente': 'Pendiente',
-            'confirmada': 'Confirmada',
-            'en_atencion': 'En Atención',
-            'atendida': 'Atendida',
-            'cancelada': 'Cancelada'
-        };
-        return textos[estado] || estado;
-    };
-
     return (
-        <div className="atenciones-container fade-in">
-            {/* HEADER */}
+        // USA LA CLASE CORRECTA DE TU CSS
+        <div className="appointments-container fade-in">
+            
+            {/* HEADER ALINEADO */}
             <div className="page-header">
                 <div>
                     <h2 className="page-title">Atenciones del Día</h2>
-                    <p className="page-subtitle">Gestión de citas médicas y atenciones</p>
+                    <p className="page-subtitle">
+                        Gestión de citas para el {new Date(filtros.fecha + 'T00:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </p>
                 </div>
-                <button className="btn-create" onClick={() => handleAbrirModal()}>
-                    <Plus size={18} /> Nueva Atención
-                </button>
+                
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {/* Botones de Vista (Estilo inline para alinearse con tu CSS existente) */}
+                    <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '4px', display: 'flex' }}>
+                        <button 
+                            onClick={() => setViewMode('table')}
+                            style={{ 
+                                padding: '8px', border: 'none', background: viewMode === 'table' ? '#F3F4F6' : 'transparent', 
+                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'table' ? '#FFC107' : '#9CA3AF' 
+                            }}
+                            title="Vista Tabla"
+                        >
+                            <List size={20} />
+                        </button>
+                        <button 
+                            onClick={() => setViewMode('cards')}
+                            style={{ 
+                                padding: '8px', border: 'none', background: viewMode === 'cards' ? '#F3F4F6' : 'transparent', 
+                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'cards' ? '#FFC107' : '#9CA3AF' 
+                            }}
+                            title="Vista Tarjetas"
+                        >
+                            <LayoutGrid size={20} />
+                        </button>
+                    </div>
+
+                    <button className="btn-create" onClick={() => handleAbrirModal()}>
+                        <Plus size={18} /> Nueva Atención
+                    </button>
+                </div>
             </div>
 
-            {/* FILTROS */}
+            {/* FILTROS (Usa tu estructura CSS exacta) */}
             <div className="filters-card fade-in-up">
                 <div className="filters-row primary-filters">
                     <div className="filter-group">
@@ -122,9 +148,10 @@ const Atenciones = () => {
                             <User size={16} />
                             <input
                                 type="text"
-                                placeholder="Nombre o DNI..."
+                                placeholder="Nombre, DNI o Historia..."
                                 value={filtros.paciente_search}
                                 onChange={(e) => handleFiltroChange('paciente_search', e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && cargarAtenciones()}
                             />
                         </div>
                     </div>
@@ -137,74 +164,62 @@ const Atenciones = () => {
                                 value={filtros.estado}
                                 onChange={(e) => handleFiltroChange('estado', e.target.value)}
                             >
-                                <option value="">Todos</option>
-                                <option value="pendiente">Pendiente</option>
-                                <option value="confirmada">Confirmada</option>
-                                <option value="en_atencion">En Atención</option>
-                                <option value="atendida">Atendida</option>
-                                <option value="cancelada">Cancelada</option>
+                                <option value="">Todos los estados</option>
+                                <option value="Programada">Programada</option>
+                                <option value="En Espera">En Espera</option>
+                                <option value="En Atención">En Atención</option>
+                                <option value="Atendida">Atendida</option>
+                                <option value="Cancelada">Cancelada</option>
                             </select>
                         </div>
                     </div>
 
-                    <button className="btn-search" onClick={handleBuscar}>
-                        <Search size={16} />
-                        Buscar
+                    <button className="btn-search" onClick={cargarAtenciones}>
+                        <Search size={16} /> Buscar
                     </button>
                 </div>
             </div>
 
-            {/* LISTA DE ATENCIONES */}
+            {/* CONTENIDO PRINCIPAL */}
             {loading ? (
                 <div className="loading-section">
                     <div className="spinner"></div>
                     <p>Cargando atenciones...</p>
                 </div>
-            ) : (
+            ) : atenciones.length > 0 ? (
                 <>
-                    <h3 className="section-title">
-                        {atenciones.length} Atenciones para el {new Date(filtros.fecha + 'T00:00:00').toLocaleDateString('es-PE', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                        })}
-                    </h3>
-
-                    {atenciones.length > 0 ? (
+                    {/* VISTA: TARJETAS (Usa tus clases cards-grid y appointment-card) */}
+                    {viewMode === 'cards' && (
                         <div className="cards-grid fade-in-up">
                             {atenciones.map((atencion) => (
                                 <div key={atencion.id} className="appointment-card">
+                                    {/* Tira de color lateral: Rojo si está cancelada */}
                                     <div 
                                         className="card-left-strip" 
-                                        style={{ backgroundColor: obtenerColorEstado(atencion.estado) }}
+                                        style={{ backgroundColor: obtenerColorEstado(atencion.estado, 'border') }}
                                     />
                                     
                                     <div className="card-content">
                                         <div className="time-badge">
                                             <Clock size={14} />
-                                            {atencion.hora_cita || 'Sin hora'}
+                                            {atencion.hora_ingreso ? atencion.hora_ingreso.substring(0,5) : '--:--'}
                                         </div>
 
                                         <div className="patient-info">
-                                            <h4>{atencion.paciente?.nombres || 'Paciente desconocido'}</h4>
+                                            <h4>{atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno}</h4>
                                             <span className="dni-tag">
-                                                DNI: {atencion.paciente?.documento_identidad || 'N/A'}
+                                                {atencion.tipo_cobertura} • {atencion.paciente?.documento_identidad}
                                             </span>
                                         </div>
 
                                         <div className="appt-details">
                                             <div className="detail-item">
                                                 <Stethoscope size={16} />
-                                                <span>
-                                                    {atencion.medico?.user?.name || 'Sin médico asignado'}
-                                                </span>
+                                                <span>{atencion.medico?.user?.name || atencion.medico?.nombre_completo || 'Sin médico'}</span>
                                             </div>
                                             <div className="detail-item">
                                                 <FileText size={16} />
-                                                <span>
-                                                    {atencion.tipo_atencion || 'Consulta General'}
-                                                </span>
+                                                <span>{atencion.tipo_atencion}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -213,40 +228,96 @@ const Atenciones = () => {
                                         <div 
                                             className="status-pill"
                                             style={{ 
-                                                backgroundColor: obtenerColorEstado(atencion.estado),
-                                                color: '#111827'
+                                                backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
+                                                color: '#1F2937' // Texto oscuro para legibilidad
                                             }}
                                         >
-                                            {obtenerTextoEstado(atencion.estado)}
+                                            {atencion.estado}
                                         </div>
                                         
-                                        <button 
-                                            className="btn-action"
-                                            onClick={() => handleAbrirModal(atencion)}
-                                        >
+                                        <button className="btn-action" onClick={() => handleAbrirModal(atencion)}>
                                             Ver Detalle
                                         </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <div className="empty-state">
-                            <Calendar size={48} style={{ color: '#9CA3AF' }} />
-                            <p>No hay atenciones programadas para esta fecha</p>
-                            <button className="btn-create" onClick={() => handleAbrirModal()}>
-                                <Plus size={18} /> Crear Nueva Atención
-                            </button>
+                    )}
+
+                    {/* VISTA: TABLA (Reutiliza clases de tabla si existen, o estilos inline simples para limpieza) */}
+                    {viewMode === 'table' && (
+                        <div className="filters-card fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                                    <tr>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Hora</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Paciente</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Médico</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Tipo</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280' }}>Estado</th>
+                                        <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '0.85rem', color: '#6B7280' }}>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {atenciones.map((atencion) => (
+                                        <tr key={atencion.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                                            <td style={{ padding: '16px 24px', color: '#374151' }}>
+                                                {atencion.hora_ingreso?.substring(0,5)}
+                                            </td>
+                                            <td style={{ padding: '16px 24px' }}>
+                                                <div style={{ fontWeight: 600, color: '#111827' }}>
+                                                    {atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno}
+                                                </div>
+                                                <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>
+                                                    {atencion.paciente?.documento_identidad}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '16px 24px', color: '#4B5563' }}>
+                                                {atencion.medico?.user?.name || '---'}
+                                            </td>
+                                            <td style={{ padding: '16px 24px' }}>
+                                                <span className="dni-tag">{atencion.tipo_atencion}</span>
+                                            </td>
+                                            <td style={{ padding: '16px 24px' }}>
+                                                <span 
+                                                    className="status-pill"
+                                                    style={{ 
+                                                        backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
+                                                        fontSize: '0.7rem'
+                                                    }}
+                                                >
+                                                    {atencion.estado}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                                                <button 
+                                                    onClick={() => handleAbrirModal(atencion)}
+                                                    style={{ border: 'none', background: 'transparent', color: '#2563EB', cursor: 'pointer' }}
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </>
+            ) : (
+                <div className="empty-state">
+                    <Calendar size={48} style={{ color: '#9CA3AF', margin: '0 auto 16px' }} />
+                    <p>No hay atenciones programadas para esta fecha</p>
+                    <button className="btn-create" onClick={() => handleAbrirModal()} style={{margin: '0 auto'}}>
+                        <Plus size={18} /> Registrar Atención
+                    </button>
+                </div>
             )}
 
-            {/* MODAL */}
             {showModal && (
                 <FormularioAtencion
                     atencion={selectedAtencion}
-                    onClose={handleCerrarModal}
+                    onClose={() => handleCerrarModal()}
                     onSuccess={() => handleCerrarModal(true)}
                 />
             )}
