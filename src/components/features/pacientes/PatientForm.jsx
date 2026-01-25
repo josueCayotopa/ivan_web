@@ -56,9 +56,9 @@ const PatientForm = ({ patient, onClose, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validación básica
-        if (!formData.nombres || !formData.apellido_paterno || !formData.documento_identidad) {
-            Swal.fire('Campos requeridos', 'Nombres, Apellido Paterno y Documento son obligatorios', 'warning');
+        // Validación completa
+        if (!formData.nombres || !formData.apellido_paterno || !formData.documento_identidad || !formData.fecha_nacimiento || !formData.genero) {
+            Swal.fire('Campos incompletos', 'Por favor complete: Nombres, Apellidos, DNI, Fecha Nacimiento y Género', 'warning');
             return;
         }
 
@@ -81,7 +81,9 @@ const PatientForm = ({ patient, onClose, onSuccess }) => {
                 onSuccess(); // Recargar tabla
                 onClose();   // Cerrar modal
             } else {
-                Swal.fire('Error', res.message || 'No se pudo guardar', 'error');
+                // Mostrar error específico del backend si existe
+                const mensajeError = res.message || 'No se pudo guardar el registro';
+                Swal.fire('Atención', mensajeError, 'warning');
             }
         } catch (error) {
             console.error(error);
