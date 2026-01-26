@@ -9,12 +9,12 @@ import PacienteForm from '../pacientes/PacienteForm';
 const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
     const esEdicion = !!atencion;
     const [loading, setLoading] = useState(false);
-    
+
     // Estados para selects
     const [especialidades, setEspecialidades] = useState([]);
     const [medicos, setMedicos] = useState([]);
     const [horariosDisponibles, setHorariosDisponibles] = useState([]);
-    
+
     // Estados de carga
     const [loadingMedicos, setLoadingMedicos] = useState(false);
     const [loadingHorarios, setLoadingHorarios] = useState(false);
@@ -23,7 +23,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
     const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
     const [buscandoPaciente, setBuscandoPaciente] = useState(false);
     const [buscarDni, setBuscarDni] = useState('');
-    
+
     const [showPacienteModal, setShowPacienteModal] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -43,7 +43,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
     useEffect(() => {
         const cargarDataInicial = async () => {
             console.log('🔄 Cargando datos iniciales...', { esEdicion, atencion });
-            
+
             // Cargar especialidades siempre
             const listaEsp = await utilsService.getEspecialidades();
             if (Array.isArray(listaEsp)) {
@@ -54,7 +54,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
             // Si es edición, cargar los datos de la atención
             if (atencion) {
                 console.log('📝 Modo edición - Datos de atención:', atencion);
-                
+
                 // ✅ Establecer paciente seleccionado
                 if (atencion.paciente) {
                     setPacienteSeleccionado(atencion.paciente);
@@ -96,7 +96,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                 console.log('✅ Formulario establecido:', datosFormulario);
             }
         };
-        
+
         cargarDataInicial();
     }, [atencion, esEdicion]);
 
@@ -107,7 +107,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                 setMedicos([]);
                 return;
             }
-            
+
             // No recargar si ya están cargados en modo edición
             if (esEdicion && medicos.length > 0) return;
 
@@ -116,7 +116,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
             setMedicos(Array.isArray(lista) ? lista : []);
             setLoadingMedicos(false);
         };
-        
+
         // Solo cargar si no es edición o si la especialidad cambió
         if (!esEdicion) {
             cargarMedicos();
@@ -130,13 +130,13 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                 setHorariosDisponibles([]);
                 return;
             }
-            
+
             setLoadingHorarios(true);
             const slots = await utilsService.getCitasDisponibles(formData.medico_id, formData.fecha_cita);
             setHorariosDisponibles(Array.isArray(slots) ? slots : []);
             setLoadingHorarios(false);
         };
-        
+
         // Solo cargar horarios en modo creación o cuando cambien médico/fecha
         if (!esEdicion || (formData.medico_id && formData.fecha_cita)) {
             cargarHorarios();
@@ -147,33 +147,33 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         const { name, value } = e.target;
         setFormData(prev => {
             const newState = { ...prev, [name]: value };
-            
+
             // Limpiar campos dependientes al cambiar especialidad
             if (name === 'especialidad_id') {
                 newState.medico_id = '';
                 newState.hora_cita = '';
             }
-            
+
             // Limpiar horario al cambiar médico
             if (name === 'medico_id') {
                 newState.hora_cita = '';
             }
-            
+
             return newState;
         });
     };
 
     const handleBuscarPaciente = async () => {
         if (!buscarDni) return;
-        
+
         setBuscandoPaciente(true);
         try {
             const res = await pacienteService.searchByDocument(buscarDni);
-            
+
             if (res.success && res.data) {
                 setPacienteSeleccionado(res.data);
                 setFormData(prev => ({ ...prev, paciente_id: res.data.id }));
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Paciente Encontrado',
@@ -213,7 +213,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!pacienteSeleccionado || !formData.hora_cita) {
             Swal.fire('Error', 'Complete todos los campos obligatorios', 'warning');
             return;
@@ -261,7 +261,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content">
+            <div className="modal-content" style={{ maxWidth: '1200px', width: '90%' }}>
                 <div className="modal-header">
                     <h3>{esEdicion ? 'Editar Atención' : 'Nueva Atención'}</h3>
                     <button className="btn-close" onClick={onClose}>
@@ -270,19 +270,19 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
-                    
+
                     {/* SECCIÓN PACIENTE */}
                     {!esEdicion && (
                         <div className="form-section">
                             <div className="section-label">
-                                <User size={18} style={{marginRight:'8px'}}/> Paciente
+                                <User size={18} style={{ marginRight: '8px' }} /> Paciente
                             </div>
-                            
+
                             {!pacienteSeleccionado ? (
                                 <div className="patient-search-row">
                                     <div className="form-group">
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             placeholder="Ingrese DNI (8 dígitos)..."
                                             value={buscarDni}
                                             onChange={(e) => setBuscarDni(e.target.value)}
@@ -290,9 +290,9 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                             maxLength={15}
                                         />
                                     </div>
-                                    <button 
-                                        type="button" 
-                                        className="btn-save" 
+                                    <button
+                                        type="button"
+                                        className="btn-save"
                                         onClick={handleBuscarPaciente}
                                         disabled={buscandoPaciente}
                                     >
@@ -301,7 +301,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 </div>
                             ) : (
                                 <div className="patient-selected-card">
-                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                                         <div className="patient-card-content">
                                             <h4>{pacienteSeleccionado.nombres} {pacienteSeleccionado.apellido_paterno} {pacienteSeleccionado.apellido_materno}</h4>
                                             <div className="patient-card-details">
@@ -310,8 +310,8 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                                 <span>Tel: {pacienteSeleccionado.telefono || 'Sin teléfono'}</span>
                                             </div>
                                         </div>
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             style={{
                                                 background: 'transparent',
                                                 border: 'none',
@@ -322,7 +322,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                             }}
                                             onClick={() => {
                                                 setPacienteSeleccionado(null);
-                                                setFormData({...formData, paciente_id: ''});
+                                                setFormData({ ...formData, paciente_id: '' });
                                             }}
                                         >
                                             Cambiar
@@ -337,7 +337,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     {esEdicion && pacienteSeleccionado && (
                         <div className="form-section">
                             <div className="section-label">
-                                <User size={18} style={{marginRight:'8px'}}/> Paciente
+                                <User size={18} style={{ marginRight: '8px' }} /> Paciente
                             </div>
                             <div className="patient-selected-card">
                                 <div className="patient-card-content">
@@ -355,18 +355,18 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     {/* DATOS DE LA CITA */}
                     <div className="form-section">
                         <div className="section-label">
-                            <Calendar size={18} style={{marginRight:'8px'}}/> Datos de la Cita
+                            <Calendar size={18} style={{ marginRight: '8px' }} /> Datos de la Cita
                         </div>
-                        
+
                         <div className="form-grid-3">
                             <div className="form-group">
                                 <label>Especialidad *</label>
                                 <div className="input-with-icon">
                                     <Briefcase size={18} />
-                                    <select 
-                                        name="especialidad_id" 
-                                        value={formData.especialidad_id} 
-                                        onChange={handleChange} 
+                                    <select
+                                        name="especialidad_id"
+                                        value={formData.especialidad_id}
+                                        onChange={handleChange}
                                         required
                                         disabled={esEdicion}
                                     >
@@ -382,11 +382,11 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 <label>Médico *</label>
                                 <div className="input-with-icon">
                                     <Stethoscope size={18} />
-                                    <select 
-                                        name="medico_id" 
-                                        value={formData.medico_id} 
-                                        onChange={handleChange} 
-                                        disabled={!formData.especialidad_id || loadingMedicos || esEdicion} 
+                                    <select
+                                        name="medico_id"
+                                        value={formData.medico_id}
+                                        onChange={handleChange}
+                                        disabled={!formData.especialidad_id || loadingMedicos || esEdicion}
                                         required
                                     >
                                         <option value="">{loadingMedicos ? 'Cargando...' : '-- Seleccione --'}</option>
@@ -403,12 +403,12 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 <label>Fecha *</label>
                                 <div className="input-with-icon">
                                     <Calendar size={18} />
-                                    <input 
-                                        type="date" 
-                                        name="fecha_cita" 
-                                        value={formData.fecha_cita} 
-                                        onChange={handleChange} 
-                                        required 
+                                    <input
+                                        type="date"
+                                        name="fecha_cita"
+                                        value={formData.fecha_cita}
+                                        onChange={handleChange}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -419,17 +419,17 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 <label>Horario *</label>
                                 <div className="input-with-icon">
                                     <Clock size={18} />
-                                    <select 
-                                        name="hora_cita" 
-                                        value={formData.hora_cita} 
-                                        onChange={handleChange} 
-                                        disabled={!formData.medico_id || loadingHorarios} 
+                                    <select
+                                        name="hora_cita"
+                                        value={formData.hora_cita}
+                                        onChange={handleChange}
+                                        disabled={!formData.medico_id || loadingHorarios}
                                         required
                                     >
                                         <option value="">{loadingHorarios ? 'Buscando...' : '-- Hora --'}</option>
                                         {esEdicion && formData.hora_cita && (
                                             <option value={formData.hora_cita}>
-                                                {formData.hora_cita.substring(0,5)} (Actual)
+                                                {formData.hora_cita.substring(0, 5)} (Actual)
                                             </option>
                                         )}
                                         {horariosDisponibles.map((hora, idx) => (
@@ -441,9 +441,9 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
                             <div className="form-group">
                                 <label>Tipo Atención</label>
-                                <select 
-                                    name="tipo_atencion" 
-                                    value={formData.tipo_atencion} 
+                                <select
+                                    name="tipo_atencion"
+                                    value={formData.tipo_atencion}
                                     onChange={handleChange}
                                 >
                                     <option>Consulta Externa</option>
@@ -454,9 +454,9 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
                             <div className="form-group">
                                 <label>Cobertura</label>
-                                <select 
-                                    name="tipo_cobertura" 
-                                    value={formData.tipo_cobertura} 
+                                <select
+                                    name="tipo_cobertura"
+                                    value={formData.tipo_cobertura}
                                     onChange={handleChange}
                                 >
                                     <option>Particular</option>
@@ -469,12 +469,12 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
                     <div className="form-group">
                         <label>Motivo</label>
-                        <textarea 
-                            name="motivo_consulta" 
-                            value={formData.motivo_consulta} 
-                            onChange={handleChange} 
-                            rows="2" 
-                            style={{width:'100%'}} 
+                        <textarea
+                            name="motivo_consulta"
+                            value={formData.motivo_consulta}
+                            onChange={handleChange}
+                            rows="2"
+                            style={{ width: '100%' }}
                             placeholder="Motivo de consulta..."
                         />
                     </div>
@@ -483,9 +483,9 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                         <button type="button" className="btn-cancel" onClick={onClose}>
                             Cancelar
                         </button>
-                        <button 
-                            type="submit" 
-                            className="btn-save" 
+                        <button
+                            type="submit"
+                            className="btn-save"
                             disabled={loading || !pacienteSeleccionado || !formData.hora_cita}
                         >
                             {loading ? 'Procesando...' : esEdicion ? 'Actualizar' : 'Agendar'}
@@ -496,7 +496,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
             {/* MODAL DE PACIENTE */}
             {showPacienteModal && (
-                <PacienteForm 
+                <PacienteForm
                     dniInicial={buscarDni}
                     onClose={() => setShowPacienteModal(false)}
                     onSuccess={handlePacienteCreado}

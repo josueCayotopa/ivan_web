@@ -1,205 +1,459 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Eye, Edit, Trash2, Phone, Filter } from 'lucide-react';
+import { 
+    Search, Plus, Eye, Edit2, User, Phone, Mail, Calendar, 
+    MapPin, FileText, Filter, X, UserPlus, Heart, Users
+} from 'lucide-react';
 import Swal from 'sweetalert2';
-import patientService from '../../services/pacienteService.js';
-import PatientForm from '../../components/features/pacientes/PatientForm';
+import pacienteService from '../../services/pacienteService';
+import PacienteForm from '../../components/features/pacientes/PacienteForm';
 import './Pacientes.css';
 
 const Pacientes = () => {
-    const [patients, setPatients] = useState([]);
+    const [pacientes, setPacientes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Modales
     const [showModal, setShowModal] = useState(false);
-    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedPaciente, setSelectedPaciente] = useState(null);
+    const [filtros, setFiltros] = useState({
+        genero: '',
+        tipo_seguro: ''
+    });
 
-    // Filtros
-    const [filters, setFilters] = useState({ genero: '', tipo_seguro: '' });
+    useEffect(() => {
+        cargarPacientes();
+    }, []);
 
-    const fetchPatients = async (search = '', currentFilters = null) => {
+    const cargarPacientes = async () => {
         setLoading(true);
-        const activeFilters = currentFilters || filters;
         try {
-            // Ajusta los parámetros según lo que tu servicio y backend esperen
-            const response = await patientService.getPatients(1, search, 50, activeFilters);
-            const list = response.data?.data || response.data || [];
-            setPatients(Array.isArray(list) ? list : []);
+            const response = await pacienteService.getPacientes(1, searchTerm);
+            
+            if (response.success) {
+                setPacientes(response.data || []);
+            } else {
+                setPacientes([]);
+            }
         } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'No se pudieron cargar los pacientes', 'error');
+            console.error('Error cargando pacientes:', error);
+            setPacientes([]);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchPatients();
-    }, []);
-
-    const handleSearch = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
-        fetchPatients(term);
+    const handleSearch = () => {
+        cargarPacientes();
     };
 
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        const newFilters = { ...filters, [name]: value };
-        setFilters(newFilters);
-        fetchPatients(searchTerm, newFilters);
+    const handleVerDetalle = (paciente) => {
+        setSelectedPaciente(paciente);
+        setShowDetailModal(true);
     };
 
-    const handleOpenModal = (patient = null) => {
-        setSelectedPatient(patient);
+    const handleNuevoPaciente = () => {
+        setSelectedPaciente(null);
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        const result = await Swal.fire({
-            title: '¿Eliminar paciente?',
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar'
-        });
-
-        if (result.isConfirmed) {
-            try {
-                const res = await patientService.deletePatient(id);
-                if (res.success) {
-                    Swal.fire('Eliminado', 'Paciente eliminado correctamente', 'success');
-                    fetchPatients(searchTerm);
-                }
-            } catch (error) {
-                Swal.fire('Error', 'No se pudo eliminar el registro', 'error');
-            }
-        }
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedPaciente(null);
     };
 
+    const handleSuccess = () => {
+        setShowModal(false);
+        setSelectedPaciente(null);
+        cargarPacientes();
+    };
+
+    const calcularEdad = (fechaNacimiento) => {
+        if (!fechaNacimiento) return 'N/A';
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimiento);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+        return `${edad} años`;
+    };
+
+    // Filtrar pacientes en el frontend
+    const pacientesFiltrados = pacientes.filter(paciente => {
+        if (filtros.genero && paciente.genero !== filtros.genero) return false;
+        if (filtros.tipo_seguro && paciente.tipo_seguro !== filtros.tipo_seguro) return false;
+        return true;
+    });
+
     return (
-        <div className="pacientes-container">
+        <div className="pacientes-container fade-in">
+            
+            {/* HEADER */}
             <div className="page-header">
                 <div>
                     <h2 className="page-title">Gestión de Pacientes</h2>
-                    <p className="page-subtitle">Directorio de historias clínicas y datos personales</p>
+                    <p className="page-subtitle">
+                        Administra la información de tus pacientes
+                    </p>
                 </div>
-                <button className="btn-create" onClick={() => handleOpenModal(null)}>
-                    <Plus size={18} /> Nuevo Paciente
+                
+                <button className="btn-create" onClick={handleNuevoPaciente}>
+                    <UserPlus size={18} /> Nuevo Paciente
                 </button>
             </div>
 
-            {/* Barra de Búsqueda y Filtros */}
-            <div className="search-filter-bar">
-                <div className="search-box">
-                    <Search size={20} className="text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Buscar por nombre, DNI o Historia..."
-                        value={searchTerm}
-                        onChange={handleSearch}
-                    />
+            {/* ESTADÍSTICAS RÁPIDAS */}
+            <div className="stats-grid">
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ background: '#E0F2FE' }}>
+                        <Users size={24} style={{ color: '#0EA5E9' }} />
+                    </div>
+                    <div className="stat-content">
+                        <p className="stat-label">Total Pacientes</p>
+                        <h3 className="stat-value">{pacientes.length}</h3>
+                    </div>
                 </div>
 
-                <div className="filters-group">
-                    <select name="genero" value={filters.genero} onChange={handleFilterChange} className="filter-select">
-                        <option value="">Género: Todos</option>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
-                    <select name="tipo_seguro" value={filters.tipo_seguro} onChange={handleFilterChange} className="filter-select">
-                        <option value="">Seguro: Todos</option>
-                        <option value="Particular">Particular</option>
-                        <option value="SIS">SIS</option>
-                        <option value="EsSalud">EsSalud</option>
-                    </select>
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ background: '#FEF3C7' }}>
+                        <UserPlus size={24} style={{ color: '#F59E0B' }} />
+                    </div>
+                    <div className="stat-content">
+                        <p className="stat-label">Nuevos este mes</p>
+                        <h3 className="stat-value">-</h3>
+                    </div>
+                </div>
+
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ background: '#DCFCE7' }}>
+                        <Heart size={24} style={{ color: '#10B981' }} />
+                    </div>
+                    <div className="stat-content">
+                        <p className="stat-label">Activos</p>
+                        <h3 className="stat-value">{pacientes.filter(p => p.status).length}</h3>
+                    </div>
                 </div>
             </div>
 
-            {/* Tabla */}
-            <div className="table-container fade-in">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p>Cargando pacientes...</p>
+            {/* FILTROS Y BÚSQUEDA */}
+            <div className="filters-card">
+                <div className="filters-row">
+                    <div className="search-box" style={{ flex: 2 }}>
+                        <Search size={18} className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre, DNI o historia clínica..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            className="search-input"
+                        />
                     </div>
-                ) : (
-                    <table className="custom-table">
+
+                    <div className="filter-group">
+                        <Filter size={16} />
+                        <select 
+                            value={filtros.genero} 
+                            onChange={(e) => setFiltros({...filtros, genero: e.target.value})}
+                        >
+                            <option value="">Todos los géneros</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <Filter size={16} />
+                        <select 
+                            value={filtros.tipo_seguro} 
+                            onChange={(e) => setFiltros({...filtros, tipo_seguro: e.target.value})}
+                        >
+                            <option value="">Todos los seguros</option>
+                            <option value="SIS">SIS</option>
+                            <option value="EsSalud">EsSalud</option>
+                            <option value="Particular">Particular</option>
+                        </select>
+                    </div>
+
+                    <button className="btn-search" onClick={handleSearch}>
+                        <Search size={16} /> Buscar
+                    </button>
+                </div>
+            </div>
+
+            {/* TABLA DE PACIENTES */}
+            {loading ? (
+                <div className="loading-section">
+                    <div className="spinner"></div>
+                    <p>Cargando pacientes...</p>
+                </div>
+            ) : pacientesFiltrados.length > 0 ? (
+                <div className="table-card fade-in-up">
+                    <table className="patients-table">
                         <thead>
                             <tr>
+                                <th>Historia Clínica</th>
                                 <th>Paciente</th>
                                 <th>Documento</th>
-                                <th>Datos</th>
+                                <th>Edad</th>
+                                <th>Género</th>
                                 <th>Contacto</th>
                                 <th>Seguro</th>
+                                <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {patients.length > 0 ? patients.map((patient) => (
-                                <tr key={patient.id}>
+                            {pacientesFiltrados.map((paciente) => (
+                                <tr key={paciente.id}>
                                     <td>
-                                        <div className="patient-cell">
-                                            <div className="avatar-circle">
-                                                {patient.nombres ? patient.nombres.charAt(0) : 'P'}
-                                            </div>
-                                            <div>
-                                                <div className="font-bold">{patient.nombres} {patient.apellido_paterno}</div>
-                                                <div className="text-muted text-xs">HC: {patient.numero_historia || '-'}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{patient.tipo_documento}</span>
-                                            <span className="text-muted">{patient.numero_documento || patient.documento_identidad}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="flex flex-col">
-                                            <span>{patient.genero === 'M' ? 'Masc.' : patient.genero === 'F' ? 'Fem.' : '-'}</span>
-                                            <span className="text-muted text-xs">{patient.fecha_nacimiento}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-1">
-                                            <Phone size={14} className="text-muted" />
-                                            <span>{patient.celular || patient.telefono || '-'}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`status-pill ${patient.tipo_seguro === 'SIS' ? 'active' : 'pendiente'}`}>
-                                            {patient.tipo_seguro || 'Particular'}
+                                        <span className="historia-badge">
+                                            {paciente.numero_historia}
                                         </span>
                                     </td>
                                     <td>
-                                        <div className="actions">
-                                            <button className="btn-icon view" title="Ver Historia"><Eye size={18} /></button>
-                                            <button className="btn-icon edit" onClick={() => handleOpenModal(patient)} title="Editar"><Edit size={18} /></button>
-                                            <button className="btn-icon delete" onClick={() => handleDelete(patient.id)} title="Eliminar"><Trash2 size={18} /></button>
+                                        <div className="patient-name-cell">
+                                            <div className="patient-avatar">
+                                                {paciente.nombres?.charAt(0)}{paciente.apellido_paterno?.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="patient-name">
+                                                    {paciente.nombres} {paciente.apellido_paterno} {paciente.apellido_materno}
+                                                </div>
+                                                <div className="patient-subtitle">
+                                                    {paciente.email || 'Sin email'}
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="6" className="text-center p-8 text-muted">
-                                        No se encontraron registros.
+                                    <td>
+                                        <span className="dni-badge">
+                                            {paciente.tipo_documento}: {paciente.documento_identidad}
+                                        </span>
+                                    </td>
+                                    <td>{calcularEdad(paciente.fecha_nacimiento)}</td>
+                                    <td>
+                                        <span className={`gender-badge ${paciente.genero === 'M' ? 'male' : 'female'}`}>
+                                            {paciente.genero === 'M' ? '♂ Masculino' : '♀ Femenino'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="contact-cell">
+                                            {paciente.telefono && (
+                                                <div className="contact-item">
+                                                    <Phone size={14} />
+                                                    <span>{paciente.telefono}</span>
+                                                </div>
+                                            )}
+                                            {!paciente.telefono && (
+                                                <span style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>Sin teléfono</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className="seguro-badge">
+                                            {paciente.tipo_seguro || 'Particular'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`status-badge ${paciente.status ? 'active' : 'inactive'}`}>
+                                            {paciente.status ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button 
+                                            className="btn-icon"
+                                            onClick={() => handleVerDetalle(paciente)}
+                                            title="Ver detalles"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
                                     </td>
                                 </tr>
-                            )}
+                            ))}
                         </tbody>
                     </table>
-                )}
-            </div>
+                </div>
+            ) : (
+                <div className="empty-state">
+                    <User size={48} style={{ color: '#9CA3AF', margin: '0 auto 16px' }} />
+                    <p>No se encontraron pacientes</p>
+                    <button className="btn-create" onClick={handleNuevoPaciente}>
+                        <UserPlus size={18} /> Registrar Primer Paciente
+                    </button>
+                </div>
+            )}
 
-            {showModal && (
-                <PatientForm
-                    patient={selectedPatient}
-                    onClose={() => setShowModal(false)}
-                    onSuccess={() => fetchPatients(searchTerm)}
+            {/* MODAL DE DETALLE */}
+            {showDetailModal && selectedPaciente && (
+                <DetalleModal 
+                    paciente={selectedPaciente}
+                    onClose={() => setShowDetailModal(false)}
+                    calcularEdad={calcularEdad}
                 />
             )}
+
+            {/* MODAL DE FORMULARIO */}
+            {showModal && (
+                <PacienteForm
+                    dniInicial=""
+                    onClose={handleCloseModal}
+                    onSuccess={handleSuccess}
+                />
+            )}
+        </div>
+    );
+};
+
+// Componente de Modal de Detalle
+const DetalleModal = ({ paciente, onClose, calcularEdad }) => {
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '900px' }}>
+                <div className="modal-header">
+                    <h3>Información del Paciente</h3>
+                    <button className="btn-close" onClick={onClose}>
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="modal-body" style={{ padding: '28px' }}>
+                    {/* Información Principal */}
+                    <div className="detail-section">
+                        <div className="detail-header">
+                            <div className="patient-avatar-large">
+                                {paciente.nombres?.charAt(0)}{paciente.apellido_paterno?.charAt(0)}
+                            </div>
+                            <div>
+                                <h2 style={{ margin: '0 0 8px 0', color: '#111827' }}>
+                                    {paciente.nombres} {paciente.apellido_paterno} {paciente.apellido_materno}
+                                </h2>
+                                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                    <span className="historia-badge">{paciente.numero_historia}</span>
+                                    <span className="dni-badge">
+                                        {paciente.tipo_documento}: {paciente.documento_identidad}
+                                    </span>
+                                    <span className={`status-badge ${paciente.status ? 'active' : 'inactive'}`}>
+                                        {paciente.status ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Información Personal */}
+                    <div className="detail-section">
+                        <h4 className="section-title">
+                            <User size={18} /> Información Personal
+                        </h4>
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">Fecha de Nacimiento:</span>
+                                <span className="detail-value">
+                                    {paciente.fecha_nacimiento 
+                                        ? new Date(paciente.fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-PE', { 
+                                            day: '2-digit', 
+                                            month: 'long', 
+                                            year: 'numeric' 
+                                        })
+                                        : 'No especificada'
+                                    }
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Edad:</span>
+                                <span className="detail-value">{calcularEdad(paciente.fecha_nacimiento)}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Género:</span>
+                                <span className="detail-value">
+                                    {paciente.genero === 'M' ? 'Masculino' : 'Femenino'}
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Grupo Sanguíneo:</span>
+                                <span className="detail-value">{paciente.grupo_sanguineo || 'No especificado'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Información de Contacto */}
+                    <div className="detail-section">
+                        <h4 className="section-title">
+                            <Phone size={18} /> Información de Contacto
+                        </h4>
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">Teléfono Principal:</span>
+                                <span className="detail-value">{paciente.telefono || 'No especificado'}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Celular:</span>
+                                <span className="detail-value">{paciente.celular || 'No especificado'}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Email:</span>
+                                <span className="detail-value">{paciente.email || 'No especificado'}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Dirección:</span>
+                                <span className="detail-value">{paciente.direccion || 'No especificada'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Información de Seguro */}
+                    <div className="detail-section">
+                        <h4 className="section-title">
+                            <FileText size={18} /> Información de Seguro
+                        </h4>
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">Tipo de Seguro:</span>
+                                <span className="detail-value">{paciente.tipo_seguro || 'Particular'}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">Número de Seguro:</span>
+                                <span className="detail-value">{paciente.numero_seguro || 'No especificado'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Información Médica */}
+                    {(paciente.alergias || paciente.antecedentes_personales || paciente.antecedentes_familiares) && (
+                        <div className="detail-section">
+                            <h4 className="section-title">
+                                <Heart size={18} /> Información Médica
+                            </h4>
+                            {paciente.alergias && (
+                                <div className="detail-item-full">
+                                    <span className="detail-label">Alergias:</span>
+                                    <p className="detail-text">{paciente.alergias}</p>
+                                </div>
+                            )}
+                            {paciente.antecedentes_personales && (
+                                <div className="detail-item-full">
+                                    <span className="detail-label">Antecedentes Personales:</span>
+                                    <p className="detail-text">{paciente.antecedentes_personales}</p>
+                                </div>
+                            )}
+                            {paciente.antecedentes_familiares && (
+                                <div className="detail-item-full">
+                                    <span className="detail-label">Antecedentes Familiares:</span>
+                                    <p className="detail-text">{paciente.antecedentes_familiares}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="modal-footer">
+                    <button className="btn-cancel" onClick={onClose}>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

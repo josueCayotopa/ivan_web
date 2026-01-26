@@ -14,9 +14,9 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import Dashboard from '../page/dashboard/Dashboard.jsx';
 import Users from '../page/dashboard/Users.jsx';
 import Medicos from '../page/dashboard/Medicos.jsx';
-import Pacientes from '../page/dashboard/Pacientes.jsx'; 
-
-// import Consultas from '../page/dashboard/Consultas.jsx'; // Descomentar cuando exista
+import Pacientes from '../page/dashboard/Pacientes.jsx';
+import Consultas from '../page/dashboard/Consultas.jsx';
+import HistoriaClinica from '../page/dashboard/HistoriaClinica'; // Asegúrate de importar TU archivo // Descomentar cuando exista
 
 const AppRoutes = () => {
   return (
@@ -33,7 +33,7 @@ const AppRoutes = () => {
           </PublicRoute>
         }
       />
-      
+
       <Route
         path="/register"
         element={
@@ -57,7 +57,7 @@ const AppRoutes = () => {
         <Route path="medicos" element={<Medicos />} />
         <Route path="pacientes" element={<Pacientes />} />
         <Route path="atenciones" element={<Atenciones />} />
-        {/* <Route path="consultas" element={<Consultas />} /> */}
+        <Route path="consultation" element={<Consultas />} />
       </Route>
 
       {/* Ruta 404 - Redirigir a login o dashboard */}

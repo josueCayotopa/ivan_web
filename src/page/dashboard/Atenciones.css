@@ -339,7 +339,30 @@
     justify-content: center;
     transition: all 0.2s;
 }
+/* Hacemos que el fondo del segundo modal sea más oscuro y esté ENCIMA del primero */
+.modal-overlay.second-level {
+    z-index: 1100 !important; /* Superior al 1000 del primer modal */
+    background-color: rgba(0, 0, 0, 0.7) !important;
+}
 
+/* Forzamos el tamaño del modal de paciente para que no herede el ancho de 1200px */
+.modal-content.patient-modal {
+    max-width: 700px !important;
+    width: 95% !important;
+    margin: auto;
+    border: 2px solid #FFC107; /* Borde dorado para diferenciarlo */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+/* Ajustes para el formulario interno del paciente */
+.modal-content.patient-modal .form-grid-2 {
+    gap: 12px; /* Menos espacio entre inputs para que sea más compacto */
+}
+
+/* Asegurar que el título se vea bien */
+.modal-content.patient-modal .modal-header {
+    background: linear-gradient(to right, #FFF9E6, #FFFFFF);
+}
 .btn-close:hover {
     background-color: #FEE2E2;
     color: #DC2626;

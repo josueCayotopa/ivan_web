@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
         },
 
         {
-            path: '/dashboard/patients',
+            path: '/dashboard/pacientes',
             label: 'Pacientes',
             icon: <Users size={22} />,
             // AGREGADO 'DOCTOR' AQUÍ (Si quieres que vean pacientes):
@@ -53,10 +53,10 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
         },
 
         {
-            path: '/dashboard/consultation',
-            label: 'Consulta Médica',
+            path: '/dashboard/consultation', // <--- CAMBIADO a 'consultas' (coincide con tu ruta)
+            label: 'Historial Clínico',   // <--- Nombre más claro para el médico
             icon: <ClipboardList size={22} />,
-            // ¡CRÍTICO! AGREGADO 'DOCTOR' AQUÍ:
+            // Asegúrate de que los roles del doctor estén aquí:
             roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'MEDICO']
         },
 
