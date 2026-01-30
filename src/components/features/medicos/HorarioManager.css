@@ -1,37 +1,87 @@
 /* src/components/features/medicos/HorarioManager.css */
 
-.horario-modal-content {
-    max-height: 85vh;
-    overflow-y: auto;
-    width: 100%;
-    max-width: 550px;
+/* --- 1. FONDO Y ESTRUCTURA DEL MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Por encima de todo */
+    padding: 10px; /* Margen de seguridad en móviles */
 }
 
+.horario-modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 550px;
+    max-height: 90vh; /* No sobrepasar el alto de la pantalla */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+/* --- 2. HEADER Y TABS --- */
+.modal-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #f3f4f6;
+    background: white;
+}
+
+.modal-header h3 { margin: 0; font-size: 1.2rem; color: #111827; }
+.modal-header p { margin: 4px 0 0 0; font-size: 0.9rem; color: #6B7280; }
+
+.btn-close {
+    background: none; border: none; cursor: pointer; color: #9CA3AF;
+    padding: 4px; border-radius: 50%; transition: background 0.2s;
+}
+.btn-close:hover { background: #F3F4F6; color: #111827; }
+
+/* TABS DE NAVEGACIÓN */
 .horario-tabs {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 0 20px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
 }
 
 .horario-tab {
     background: none;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 16px;
     cursor: pointer;
-    font-weight: 500;
-    color: #6b7280;
+    font-weight: 600;
+    color: #6B7280;
     display: flex;
     align-items: center;
     gap: 8px;
     border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-size: 0.9rem;
 }
+
+.horario-tab:hover { background-color: #F3F4F6; }
 
 .horario-tab.active {
-    color: #4f46e5;
-    border-bottom-color: #4f46e5;
+    color: #4F46E5; /* Color activo (Índigo) */
+    border-bottom-color: #4F46E5;
+    background: white;
+    border-radius: 8px 8px 0 0;
 }
 
+/* --- 3. FORMULARIO Y GRIDS --- */
+.horario-form {
+    padding: 20px;
+    overflow-y: auto; /* Scroll si el formulario es muy largo */
+}
+
+/* GRILLA RESPONSIVA: 2 columnas en PC */
 .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -39,53 +89,102 @@
     margin-bottom: 15px;
 }
 
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 10px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box; /* Evita desbordes */
+    outline: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: #FFC107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+}
+
 .btn-block {
     width: 100%;
     margin-top: 10px;
+    background-color: #FFC107;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
+.btn-block:hover { background-color: #F59E0B; }
 
-/* Lista de horarios */
+/* --- 4. LISTA DE HORARIOS --- */
 .horarios-list-section {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
+    padding: 20px;
+    background-color: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+    max-height: 200px; /* Altura máxima para la lista */
+    overflow-y: auto;
 }
 
-.horarios-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 15px;
+.horarios-list-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #4B5563;
 }
 
 .horario-card {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 12px;
-    background: #f9fafb;
+    gap: 12px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #E5E7EB;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    margin-bottom: 8px;
 }
 
 .horario-icon {
-    color: #4f46e5;
-    background: #e0e7ff;
+    color: #4F46E5;
+    background: #EEF2FF;
     padding: 8px;
     border-radius: 50%;
-}
-
-.horario-info {
     display: flex;
-    flex-direction: column;
 }
 
-.horario-info strong {
-    font-size: 0.95rem;
-    color: #1f2937;
-}
+/* --- 5. MEDIA QUERY: MÓVIL (Responsivo) --- */
+@media (max-width: 640px) {
+    .horario-modal-content {
+        max-height: 95vh;
+        width: 100%; /* Ocupa todo el ancho */
+    }
 
-.horario-info span {
-    font-size: 0.9rem;
-    color: #374151;
+    /* Transformar Grid a 1 sola columna */
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .horario-tabs {
+        overflow-x: auto; /* Scroll horizontal para tabs */
+        white-space: nowrap;
+    }
+    
+    .horario-tab {
+        flex: 1; /* Tabs ocupan espacio igual */
+        justify-content: center;
+    }
 }

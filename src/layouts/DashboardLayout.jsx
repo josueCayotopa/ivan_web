@@ -1,21 +1,21 @@
-
+// Ubicación: src/layouts/DashboardLayout.jsx
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // 👈 Nota: Aquí es solo un nivel "../"
 import Sidebar from './Sidebar';
 import Header from './Header';
-import '../layouts/DashboardLayout.css'; // Mantiene tu CSS actual
+import './DashboardLayout.css';
 
 const DashboardLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-    const { user, logout } = useAuth(); // ✅ Usa AuthContext en lugar de localStorage
+    const { user, logout } = useAuth();
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
     const handleLogout = () => {
-        logout(); // ✅ Centralizado
+        logout();
     };
 
     const closeSidebarMobile = () => {
@@ -26,7 +26,7 @@ const DashboardLayout = () => {
 
     return (
         <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            {/* Overlay for mobile */}
+            {/* Overlay para móvil */}
             {isSidebarOpen && window.innerWidth <= 768 && (
                 <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
             )}
@@ -45,6 +45,7 @@ const DashboardLayout = () => {
                 />
 
                 <div className="content-wrapper">
+                    {/* 👇 AQUÍ SE RENDERIZAN TUS PÁGINAS (Home, Pacientes, etc.) */}
                     <Outlet />
                 </div>
             </div>

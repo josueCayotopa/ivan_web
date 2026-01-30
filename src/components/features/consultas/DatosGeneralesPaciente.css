@@ -1,235 +1,149 @@
 /* DatosGeneralesPaciente.css */
 
-.datos-generales-container {
+.datos-generales-container.compact-mode {
     background: white;
-    border: 2px solid #1F2937;
+    border: 1px solid #E5E7EB;
     border-radius: 8px;
-    padding: 0;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
 }
 
-/* Header de la sección */
-.datos-generales-header {
-    background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+/* HEADER OSCURO */
+.compact-header {
+    background: #1F2937; /* Gris oscuro */
     color: white;
-    padding: 16px 24px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.identity-block {
     display: flex;
     align-items: center;
     gap: 12px;
-    border-radius: 6px 6px 0 0;
 }
 
 .header-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+    background: #FFC107;
+    color: #1F2937;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.datos-generales-header h3 {
+.patient-name {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: white;
 }
 
-/* Grid de datos */
-.datos-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px 12px;
-    padding: 24px;
+.patient-meta {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    display: flex;
+    gap: 6px;
+}
+
+.secondary-info {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #D1D5DB;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+/* GRID DE EDICIÓN */
+.datos-edit-grid {
+    display: flex;
+    flex-wrap: wrap;
     background: #F9FAFB;
+    padding: 8px 16px;
+    gap: 12px;
+    border-top: 1px solid #374151;
 }
 
-/* Items de datos */
-.dato-item {
+.edit-group {
+    flex: 1;
+    min-width: 140px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    background: white;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #E5E7EB;
+    gap: 2px;
 }
 
-.dato-item.dato-full-width {
-    grid-column: span 4;
-}
+.edit-group.wide { flex: 2; min-width: 250px; }
+.edit-group.small { flex: 0.5; min-width: 100px; }
 
-.dato-item.dato-small {
-    grid-column: span 1;
-}
-
-/* Labels */
-.dato-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6B7280;
+.edit-group label {
+    font-size: 0.65rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #6B7280;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
+    gap: 4px;
 }
 
-.dato-label svg {
-    flex-shrink: 0;
-}
-
-/* Values */
-.dato-value {
-    font-size: 0.95rem;
-    color: #1F2937;
-    font-weight: 500;
-    padding: 6px 8px;
-    background: #F9FAFB;
-    border-radius: 4px;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-}
-
-.dato-value.dato-resaltado {
-    background: linear-gradient(135deg, #FFF9E6 0%, #FFFEF7 100%);
-    border: 2px solid #FFC107;
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: #1F2937;
-    padding: 10px 12px;
-}
-
-.dato-value.dato-edad {
-    background: #DBEAFE;
-    color: #1E40AF;
-    font-weight: 700;
-    border: 1px solid #93C5FD;
-}
-
-.dato-value.dato-input {
-    background: white;
-    border: 1px dashed #9CA3AF;
-    color: #9CA3AF;
-    font-style: italic;
-}
-
-/* Información de la atención */
-.atencion-info {
-    display: flex;
-    gap: 12px;
-    padding: 16px 24px;
-    background: #F3F4F6;
-    border-top: 1px solid #E5E7EB;
-    flex-wrap: wrap;
-}
-
-.atencion-badge {
+.multi-input-row {
     display: flex;
     align-items: center;
     gap: 8px;
     background: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 600;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    padding: 4px 8px;
+    height: 32px;
+}
+
+.multi-input-row input, 
+.multi-input-row select {
+    border: none;
+    outline: none;
+    font-size: 0.85rem;
     color: #374151;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    background: transparent;
 }
 
-.atencion-badge svg {
-    color: #FFC107;
-    flex-shrink: 0;
+.input-highlight {
+    font-weight: 600;
+    color: #111827;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-    .datos-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .dato-item.dato-full-width {
-        grid-column: span 3;
-    }
+.static-ref {
+    font-size: 0.7rem;
+    color: #9CA3AF;
+    white-space: nowrap;
+    border-left: 1px solid #E5E7EB;
+    padding-left: 8px;
 }
 
-@media (max-width: 900px) {
-    .datos-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dato-item.dato-full-width {
-        grid-column: span 2;
-    }
-
-    .dato-item.dato-small {
-        grid-column: span 1;
-    }
+.mini-field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #6B7280;
+    border-left: 1px solid #E5E7EB;
+    padding-left: 8px;
 }
 
-@media (max-width: 600px) {
-    .datos-generales-container {
-        margin: 0 -16px 24px -16px;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-
-    .datos-grid {
-        grid-template-columns: 1fr;
-        padding: 16px;
-        gap: 12px;
-    }
-
-    .dato-item.dato-full-width,
-    .dato-item.dato-small {
-        grid-column: span 1;
-    }
-
-    .datos-generales-header {
-        padding: 12px 16px;
-    }
-
-    .datos-generales-header h3 {
-        font-size: 0.9rem;
-    }
-
-    .atencion-info {
-        flex-direction: column;
-        padding: 12px 16px;
-    }
-
-    .atencion-badge {
-        width: 100%;
-        justify-content: center;
-    }
+.input-number {
+    width: 40px !important;
+    text-align: center;
 }
 
-/* Print styles */
-@media print {
-    .datos-generales-container {
-        border: 2px solid #000;
-        page-break-inside: avoid;
-    }
-
-    .datos-generales-header {
-        background: #000 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .dato-value {
-        border-bottom: 1px solid #000;
-        background: white;
-    }
-
-    .atencion-info {
-        border-top: 2px solid #000;
-    }
+.edit-group:focus-within .multi-input-row {
+    border-color: #FFC107;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.1);
 }

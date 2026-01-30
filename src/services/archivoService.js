@@ -1,72 +1,75 @@
-// src/services/archivoService.js
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
-
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Authorization': token ? `Bearer ${token}` : '',
-        // NO poner Content-Type aquí para que el navegador configure el multipart/form-data automáticamente con el boundary correcto
-        'Accept': 'application/json',
-    };
-};
+import axios from '../api/axios';
 
 const archivoService = {
-    // Listar archivos de una entidad (ej: Paciente o Consulta)
-    async getArchivos(tipoEntidad, idEntidad) {
-        try {
-            const response = await fetch(`${API_URL}/archivos?tipo=${tipoEntidad}&id=${idEntidad}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
-                }
-            });
-            const data = await response.json();
-            return { success: response.ok, data: data.data || [] };
-        } catch (error) {
-            console.error('Error al obtener archivos:', error);
-            return { success: false, data: [] };
-        }
+    /**
+     * Obtener archivos de una entidad específica.
+     * Ruta Backend: GET /api/v1/archivos
+     * @param {string} tipo - Ej: "ConsultaExterna", "Paciente"
+     * @param {number} id - ID de la entidad (ej: id de la consulta)
+     */
+    async getArchivos(tipo, id) {
+        // Axios serializa automáticamente los params en la URL
+        return await axios.get('/archivos', {
+            params: {
+                adjuntable_type: tipo,
+                adjuntable_id: id
+            }
+        });
     },
 
-    // Subir nuevo archivo
-    async subirArchivo(payload) {
-        try {
-            const formData = new FormData();
-            formData.append('adjuntable_type', payload.adjuntable_type); // ej: 'App\Models\Pacientes'
-            formData.append('adjuntable_id', payload.adjuntable_id);
-            formData.append('categoria', payload.categoria || 'general');
-            formData.append('file', payload.file); // El objeto File real
-
-            const response = await fetch(`${API_URL}/archivos/upload`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: formData
-            });
-            
-            const data = await response.json();
-            return { success: response.ok, data: data.data, message: data.message };
-        } catch (error) {
-            console.error('Error subiendo archivo:', error);
-            return { success: false, message: 'Error de conexión al subir' };
-        }
+    /**
+     * Obtener TODA la galería histórica de un paciente.
+     * Ruta Backend: GET /api/v1/pacientes/{id}/galeria
+     * (Definida al final de tu grupo 'v1' en api.php)
+     */
+    async getGaleriaPaciente(pacienteId) {
+        return await axios.get(`/pacientes/${pacienteId}/galeria`);
     },
 
-    // Eliminar archivo
+    /**
+     * Subir un nuevo archivo.
+     * Ruta Backend: POST /api/v1/archivos/upload
+     */
+    async subirArchivo(data) {
+        const formData = new FormData();
+        
+        // Campos requeridos por tu StoreArchivoAdjuntoRequest y Service
+        formData.append('file', data.file); // El objeto File nativo
+        formData.append('categoria', data.categoria); // Ej: "Foto Antes"
+        formData.append('adjuntable_type', data.adjuntable_type); // Ej: "ConsultaExterna"
+        formData.append('adjuntable_id', data.adjuntable_id); // ID de la consulta
+        
+        // Campos opcionales
+        if (data.descripcion) {
+            formData.append('descripcion', data.descripcion);
+        }
+        
+        // Opcional: Si quieres guardar la fecha real de captura
+        if (data.fecha_captura) {
+            formData.append('fecha_captura', data.fecha_captura);
+        }
+
+        // Opcional: Si el backend usa paciente_id para búsquedas rápidas (aunque tu lógica actual usa relaciones)
+        if (data.paciente_id) {
+            formData.append('paciente_id', data.paciente_id);
+        }
+
+        // NOTA: No necesitas agregar el Header de Authorization aquí manualmente,
+        // tu instancia 'api/axios' ya debería inyectarlo. 
+        // Solo especificamos el Content-Type para la subida de archivos.
+        return await axios.post('/archivos/upload', formData, {
+            headers: { 
+                'Content-Type': 'multipart/form-data' 
+            }
+        });
+    },
+
+    /**
+     * Eliminar un archivo.
+     * Ruta Backend: DELETE /api/v1/archivos/{id}
+     */
     async eliminarArchivo(id) {
-        try {
-            const response = await fetch(`${API_URL}/archivos/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
-                }
-            });
-            return { success: response.ok };
-        } catch (error) {
-            return { success: false };
-        }
+        return await axios.delete(`/archivos/${id}`);
     }
 };
 

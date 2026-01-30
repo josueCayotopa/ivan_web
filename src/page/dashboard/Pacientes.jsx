@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Search, Plus, Eye, Edit2, User, Phone, Mail, Calendar, 
-    MapPin, FileText, Filter, X, UserPlus, Heart, Users
+import {
+    Search, Plus, Eye, Edit2, User, Phone, Mail, Calendar,
+    MapPin, FileText, Filter, X, UserPlus, Heart, Users, MessageCircle
 } from 'lucide-react';
+
 import Swal from 'sweetalert2';
 import pacienteService from '../../services/pacienteService';
 import PacienteForm from '../../components/features/pacientes/PacienteForm';
 import './Pacientes.css';
 
 const Pacientes = () => {
+    // Estados
     const [pacientes, setPacientes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [pagina, setPagina] = useState(1); // <--- FALTABA ESTE ESTADO
+
+    // Estados de Modales
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedPaciente, setSelectedPaciente] = useState(null);
+
+    // Filtros
     const [filtros, setFiltros] = useState({
         genero: '',
         tipo_seguro: ''
@@ -22,28 +29,38 @@ const Pacientes = () => {
 
     useEffect(() => {
         cargarPacientes();
-    }, []);
+    }, [pagina]); // Recargar si cambia la página
 
     const cargarPacientes = async () => {
         setLoading(true);
         try {
-            const response = await pacienteService.getPacientes(1, searchTerm);
-            
+            // ✅ CORREGIDO: Usamos las variables de estado reales (pagina, searchTerm)
+            const response = await pacienteService.getPacientes(pagina, searchTerm);
+
+            console.log("Respuesta Pacientes:", response);
+
             if (response.success) {
+                // Aseguramos que sea un array
                 setPacientes(response.data || []);
             } else {
                 setPacientes([]);
+                console.error("Error cargando pacientes:", response.message);
             }
         } catch (error) {
-            console.error('Error cargando pacientes:', error);
             setPacientes([]);
+            console.error(error);
         } finally {
             setLoading(false);
         }
     };
 
     const handleSearch = () => {
-        cargarPacientes();
+        // Al buscar, reiniciamos a la página 1 y cargamos
+        if (pagina !== 1) {
+            setPagina(1);
+        } else {
+            cargarPacientes();
+        }
     };
 
     const handleVerDetalle = (paciente) => {
@@ -79,8 +96,11 @@ const Pacientes = () => {
         return `${edad} años`;
     };
 
-    // Filtrar pacientes en el frontend
-    const pacientesFiltrados = pacientes.filter(paciente => {
+    // Validación de seguridad para el filtrado
+    const listaSegura = Array.isArray(pacientes) ? pacientes : [];
+
+    // Filtrado en cliente
+    const pacientesFiltrados = listaSegura.filter(paciente => {
         if (filtros.genero && paciente.genero !== filtros.genero) return false;
         if (filtros.tipo_seguro && paciente.tipo_seguro !== filtros.tipo_seguro) return false;
         return true;
@@ -88,7 +108,7 @@ const Pacientes = () => {
 
     return (
         <div className="pacientes-container fade-in">
-            
+
             {/* HEADER */}
             <div className="page-header">
                 <div>
@@ -97,7 +117,7 @@ const Pacientes = () => {
                         Administra la información de tus pacientes
                     </p>
                 </div>
-                
+
                 <button className="btn-create" onClick={handleNuevoPaciente}>
                     <UserPlus size={18} /> Nuevo Paciente
                 </button>
@@ -131,7 +151,7 @@ const Pacientes = () => {
                     </div>
                     <div className="stat-content">
                         <p className="stat-label">Activos</p>
-                        <h3 className="stat-value">{pacientes.filter(p => p.status).length}</h3>
+                        <h3 className="stat-value"></h3>
                     </div>
                 </div>
             </div>
@@ -153,9 +173,9 @@ const Pacientes = () => {
 
                     <div className="filter-group">
                         <Filter size={16} />
-                        <select 
-                            value={filtros.genero} 
-                            onChange={(e) => setFiltros({...filtros, genero: e.target.value})}
+                        <select
+                            value={filtros.genero}
+                            onChange={(e) => setFiltros({ ...filtros, genero: e.target.value })}
                         >
                             <option value="">Todos los géneros</option>
                             <option value="M">Masculino</option>
@@ -165,9 +185,9 @@ const Pacientes = () => {
 
                     <div className="filter-group">
                         <Filter size={16} />
-                        <select 
-                            value={filtros.tipo_seguro} 
-                            onChange={(e) => setFiltros({...filtros, tipo_seguro: e.target.value})}
+                        <select
+                            value={filtros.tipo_seguro}
+                            onChange={(e) => setFiltros({ ...filtros, tipo_seguro: e.target.value })}
                         >
                             <option value="">Todos los seguros</option>
                             <option value="SIS">SIS</option>
@@ -240,14 +260,34 @@ const Pacientes = () => {
                                     </td>
                                     <td>
                                         <div className="contact-cell">
-                                            {paciente.telefono && (
-                                                <div className="contact-item">
-                                                    <Phone size={14} />
-                                                    <span>{paciente.telefono}</span>
-                                                </div>
-                                            )}
-                                            {!paciente.telefono && (
-                                                <span style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>Sin teléfono</span>
+                                            {/* Verificamos si existe telefono O celular */}
+                                            {paciente.telefono || paciente.celular ? (
+                                                <a
+                                                    /* Usamos el dato que exista, limpiamos espacios y guiones */
+                                                    href={`https://wa.me/51${(paciente.telefono || paciente.celular).replace(/\D/g, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    title="Chat WhatsApp"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        color: '#15803d', /* Verde oscuro */
+                                                        fontWeight: '600',
+                                                        textDecoration: 'none',
+                                                        background: '#dcfce7', /* Verde claro */
+                                                        padding: '6px 10px',
+                                                        borderRadius: '20px', /* Bordes redondeados estilo botón */
+                                                        border: '1px solid #86efac',
+                                                        fontSize: '0.85rem',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    <MessageCircle size={16} />
+                                                    {paciente.telefono || paciente.celular}
+                                                </a>
+                                            ) : (
+                                                <span style={{ color: '#9CA3AF', fontSize: '0.85rem' }}>-</span>
                                             )}
                                         </div>
                                     </td>
@@ -262,7 +302,7 @@ const Pacientes = () => {
                                         </span>
                                     </td>
                                     <td>
-                                        <button 
+                                        <button
                                             className="btn-icon"
                                             onClick={() => handleVerDetalle(paciente)}
                                             title="Ver detalles"
@@ -287,7 +327,7 @@ const Pacientes = () => {
 
             {/* MODAL DE DETALLE */}
             {showDetailModal && selectedPaciente && (
-                <DetalleModal 
+                <DetalleModal
                     paciente={selectedPaciente}
                     onClose={() => setShowDetailModal(false)}
                     calcularEdad={calcularEdad}
@@ -351,11 +391,11 @@ const DetalleModal = ({ paciente, onClose, calcularEdad }) => {
                             <div className="detail-item">
                                 <span className="detail-label">Fecha de Nacimiento:</span>
                                 <span className="detail-value">
-                                    {paciente.fecha_nacimiento 
-                                        ? new Date(paciente.fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-PE', { 
-                                            day: '2-digit', 
-                                            month: 'long', 
-                                            year: 'numeric' 
+                                    {paciente.fecha_nacimiento
+                                        ? new Date(paciente.fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-PE', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric'
                                         })
                                         : 'No especificada'
                                     }

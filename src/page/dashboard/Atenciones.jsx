@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import atencionService from '../../services/atencionService.js';
 import FormularioAtencion from '../../components/features/atenciones/FormularioAtencion';
 import './Atenciones.css';
+import { getFechaLocal } from '../../utils/dateUtils';
 
 const Atenciones = () => {
     const [atenciones, setAtenciones] = useState([]);
@@ -17,7 +18,7 @@ const Atenciones = () => {
     const [viewMode, setViewMode] = useState('table');
 
     const [filtros, setFiltros] = useState({
-        fecha: new Date().toISOString().split('T')[0],
+       fecha: getFechaLocal(),
         paciente_search: '',
         medico_id: '',
         estado: ''

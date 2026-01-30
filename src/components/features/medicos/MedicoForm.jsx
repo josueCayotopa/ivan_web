@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import Swal from 'sweetalert2';
 import medicoService from '../../../services/medicoService';
 import especialidadService from '../../../services/especialidadService';
-
+import './MedicoForm.css';
 const MedicoForm = ({ medico, onClose, onSuccess }) => {
     const isEditing = !!medico;
     const [loading, setLoading] = useState(false);

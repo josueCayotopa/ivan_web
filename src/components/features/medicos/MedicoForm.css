@@ -1,0 +1,119 @@
+/* src/components/features/medicos/MedicoForm.css */
+
+/* --- Ajustes del Modal para Móvil --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centrado vertical en PC */
+    z-index: 1000;
+    padding: 10px; /* Espacio de seguridad en bordes de móvil */
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    overflow: hidden; /* Para que el header no se salga */
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #F9FAFB;
+}
+
+/* --- Cuerpo del Formulario con Scroll --- */
+.modal-form {
+    padding: 20px;
+    overflow-y: auto; /* Scroll interno solo para el formulario */
+    max-height: calc(90vh - 130px); /* Resta altura de header y footer */
+}
+
+/* --- GRID RESPONSIVO (La parte importante) --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 columnas en PC */
+    gap: 16px;
+}
+
+/* --- ESTILOS DE INPUTS --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: 100%; /* Asegura que no se desborden */
+    box-sizing: border-box; /* Incluye padding en el ancho */
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: #FFC107; /* Tu color primario */
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+/* --- Footer --- */
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: #F9FAFB;
+}
+
+/* --- MEDIA QUERY: MÓVIL (Menos de 768px) --- */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* 1 sola columna en móvil */
+        gap: 12px;
+    }
+
+    .modal-content {
+        max-height: 95vh; /* Aprovecha más pantalla en móvil */
+        width: 100%;
+        margin: 0;
+    }
+    
+    .modal-form {
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        flex-direction: column-reverse; /* Botones apilados en móvil es mejor UX */
+    }
+    
+    .modal-footer button {
+        width: 100%;
+        padding: 12px;
+    }
+}

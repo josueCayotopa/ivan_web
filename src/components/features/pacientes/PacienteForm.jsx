@@ -1,42 +1,65 @@
-import React, { useState } from 'react';
-import { X, Save, MapPin, Phone, User, Briefcase, Heart, Baby } from 'lucide-react'; // Nuevos iconos
+// src/components/features/pacientes/PacienteForm.jsx
+import React, { useState, useEffect } from 'react';
+import { X, Save, User, Phone, MapPin, Heart, Baby } from 'lucide-react'; // Iconos sugeridos
 import Swal from 'sweetalert2';
 import pacienteService from '../../../services/pacienteService';
 
-const PacienteForm = ({ dniInicial, onClose, onSuccess }) => {
+const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
+    const isEditing = !!paciente;
     const [loading, setLoading] = useState(false);
-    
+
+    // Estado inicial
     const [formData, setFormData] = useState({
         // Identificación
         tipo_documento: 'DNI',
-        documento_identidad: dniInicial || '',
-        genero: '',
-        
-        // Personales
+        documento_identidad: initialDni || '',
         nombres: '',
         apellido_paterno: '',
         apellido_materno: '',
         fecha_nacimiento: '',
-        lugar_nacimiento: '',
-        ocupacion: '',
-        estado_civil: '',      // <--- NUEVO
-        cantidad_hijos: '',    // <--- NUEVO
-        ultimo_embarazo: '',   // <--- NUEVO
+        genero: 'M',
         
         // Contacto
         telefono: '',
-        celular: '',
-        telefono_domicilio: '',
-        telefono_oficina: '',
         email: '',
-        correo_electronico: '',
-        
-        // Ubicación
         direccion: '',
-        departamento: '',
-        provincia: '',
-        distrito: ''
+        ocupacion: '',
+
+        // ✅ NUEVOS CAMPOS SOCIALES
+        estado_civil: '',
+        cantidad_hijos: 0,
+        ultimo_embarazo: '', // Solo para mujeres
+
+        // Antecedentes rápidos (Opcional si los manejas aquí)
+        alergias: '',
     });
+
+    // Cargar datos si es edición
+    useEffect(() => {
+        if (paciente) {
+            setFormData({
+                id: paciente.id,
+                tipo_documento: paciente.tipo_documento || 'DNI',
+                documento_identidad: paciente.documento_identidad || '',
+                nombres: paciente.nombres || '',
+                apellido_paterno: paciente.apellido_paterno || '',
+                apellido_materno: paciente.apellido_materno || '',
+                fecha_nacimiento: paciente.fecha_nacimiento || '',
+                genero: paciente.genero || 'M',
+                telefono: paciente.celular || paciente.telefono || '',
+                email: paciente.email || '',
+                direccion: paciente.direccion || '',
+                ocupacion: paciente.ocupacion || '',
+                
+                // ✅ CARGAR NUEVOS CAMPOS
+                estado_civil: paciente.estado_civil || '',
+                cantidad_hijos: paciente.cantidad_hijos || 0,
+                ultimo_embarazo: paciente.ultimo_embarazo || '',
+                
+                alergias: paciente.alergias || ''
+            });
+        }
+    }, [paciente]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,118 +70,126 @@ const PacienteForm = ({ dniInicial, onClose, onSuccess }) => {
         e.preventDefault();
         setLoading(true);
 
-        if (!formData.nombres || !formData.apellido_paterno || !formData.documento_identidad || !formData.genero) {
-            Swal.fire('Error', 'Complete los campos obligatorios (*)', 'error');
-            setLoading(false);
-            return;
-        }
-
         try {
-            const payload = {
-                ...formData,
-                nombre_completo: `${formData.nombres} ${formData.apellido_paterno} ${formData.apellido_materno}`.trim(),
-                status: true
-            };
+            // Preparar payload
+            const payload = { ...formData };
+            
+            // Limpieza: Si es hombre, ultimo_embarazo se envía vacío o null
+            if (payload.genero === 'M') {
+                payload.ultimo_embarazo = null;
+            }
 
-            const response = await pacienteService.createPaciente(payload);
+            let response;
+            if (isEditing) {
+                response = await pacienteService.updatePaciente(paciente.id, payload);
+            } else {
+                response = await pacienteService.createPaciente(payload);
+            }
 
-            if (response.success || response.status === 201 || response.ok) {
+            if (response.success || response.id) { // Ajusta según tu respuesta del backend
                 Swal.fire({
                     icon: 'success',
-                    title: 'Paciente Registrado',
-                    text: 'Ficha de admisión guardada correctamente',
+                    title: 'Éxito',
+                    text: `Paciente ${isEditing ? 'actualizado' : 'registrado'} correctamente`,
                     timer: 1500,
                     showConfirmButton: false
                 });
-                onSuccess(response.data); 
+                if (onSuccess) onSuccess(response.data || response); // Devuelve el paciente creado
+                onClose();
             } else {
-                const msg = response.errors 
-                    ? Object.values(response.errors).flat().join(', ')
-                    : (response.message || 'No se pudo crear el paciente');
-                Swal.fire('Error', msg, 'error');
+                throw new Error(response.message || 'Error al guardar');
             }
+
         } catch (error) {
             console.error(error);
-            Swal.fire('Error', 'Error de conexión', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo guardar el paciente'
+            });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="modal-overlay second-level">
-            <div className="modal-content patient-modal fade-in-up" style={{ maxWidth: '850px' }}>
-                
+        <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '800px' }}>
                 <div className="modal-header">
-                    <div>
-                        <h3>Registrar Nuevo Paciente</h3>
-                        <p style={{fontSize: '0.85rem', color: '#6B7280', margin: 0}}>Ficha de Admisión</p>
-                    </div>
+                    <h3>{isEditing ? 'Editar Paciente' : 'Nuevo Paciente'}</h3>
                     <button className="btn-close" onClick={onClose}><X size={20} /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
                     
-                    {/* --- SECCIÓN 1: DATOS PERSONALES --- */}
-                    <div className="form-section-group">
-                        <h4 className="group-title"><User size={16}/> Datos Personales</h4>
-                        
-                        {/* Fila Documento y Género */}
+                    {/* SECCIÓN 1: IDENTIFICACIÓN */}
+                    <div className="form-section">
+                        <h4 className="subsection-title"><User size={16}/> Datos Personales</h4>
                         <div className="form-grid-3">
                             <div className="form-group">
                                 <label>Tipo Doc. *</label>
                                 <select name="tipo_documento" value={formData.tipo_documento} onChange={handleChange} required>
                                     <option value="DNI">DNI</option>
                                     <option value="CE">Carnet Ext.</option>
-                                    <option value="PASAPORTE">Pasaporte</option>
+                                    <option value="Pasaporte">Pasaporte</option>
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Número Doc. *</label>
-                                <input name="documento_identidad" value={formData.documento_identidad} onChange={handleChange} maxLength={15} required />
+                                <label>Nro. Documento *</label>
+                                <input 
+                                    name="documento_identidad" 
+                                    value={formData.documento_identidad} 
+                                    onChange={handleChange} 
+                                    maxLength={15}
+                                    required 
+                                />
                             </div>
+                            <div className="form-group">
+                                <label>Fecha Nacimiento *</label>
+                                <input 
+                                    type="date" 
+                                    name="fecha_nacimiento" 
+                                    value={formData.fecha_nacimiento} 
+                                    onChange={handleChange} 
+                                    required 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-grid-3">
+                            <div className="form-group">
+                                <label>Nombres *</label>
+                                <input name="nombres" value={formData.nombres} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Apellido Paterno *</label>
+                                <input name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Apellido Materno</label>
+                                <input name="apellido_materno" value={formData.apellido_materno} onChange={handleChange} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECCIÓN 2: DATOS SOCIALES Y CONTACTO */}
+                    <div className="form-section" style={{ marginTop: '20px' }}>
+                        <h4 className="subsection-title"><Heart size={16}/> Información Social y Contacto</h4>
+                        
+                        <div className="form-grid-3">
                             <div className="form-group">
                                 <label>Género *</label>
                                 <select name="genero" value={formData.genero} onChange={handleChange} required>
-                                    <option value="">-- Seleccione --</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Femenino</option>
                                 </select>
                             </div>
-                        </div>
 
-                        {/* Fila Nombres */}
-                        <div className="form-group">
-                            <label>Nombres *</label>
-                            <input name="nombres" value={formData.nombres} onChange={handleChange} required className="uppercase-input"/>
-                        </div>
-
-                        {/* Fila Apellidos */}
-                        <div className="form-grid-2">
+                            {/* ✅ NUEVO: ESTADO CIVIL */}
                             <div className="form-group">
-                                <label>Apellido Paterno *</label>
-                                <input name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} required className="uppercase-input"/>
-                            </div>
-                            <div className="form-group">
-                                <label>Apellido Materno</label>
-                                <input name="apellido_materno" value={formData.apellido_materno} onChange={handleChange} className="uppercase-input"/>
-                            </div>
-                        </div>
-
-                        {/* Fila Nacimiento, Lugar y Estado Civil */}
-                        <div className="form-grid-3">
-                            <div className="form-group">
-                                <label>F. Nacimiento</label>
-                                <input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Lugar Nacimiento</label>
-                                <input name="lugar_nacimiento" value={formData.lugar_nacimiento} onChange={handleChange} placeholder="Ciudad/País" />
-                            </div>
-                            <div className="form-group">
-                                <label>Estado Civil</label> {/* NUEVO */}
+                                <label>Estado Civil</label>
                                 <select name="estado_civil" value={formData.estado_civil} onChange={handleChange}>
-                                    <option value="">-- Seleccione --</option>
+                                    <option value="">Seleccione...</option>
                                     <option value="Soltero">Soltero(a)</option>
                                     <option value="Casado">Casado(a)</option>
                                     <option value="Conviviente">Conviviente</option>
@@ -166,80 +197,59 @@ const PacienteForm = ({ dniInicial, onClose, onSuccess }) => {
                                     <option value="Viudo">Viudo(a)</option>
                                 </select>
                             </div>
-                        </div>
 
-                        {/* Fila Ocupación y Familia (Solo si es mujer o relevante) */}
-                        <div className="form-grid-3" style={{marginTop: '10px'}}>
                             <div className="form-group">
                                 <label>Ocupación</label>
-                                <div className="input-with-icon">
-                                    <Briefcase size={14} style={{position:'absolute', left:10, top:12, color:'#9CA3AF'}}/>
-                                    <input name="ocupacion" value={formData.ocupacion} onChange={handleChange} style={{paddingLeft:30}} placeholder="Ej. Abogado"/>
+                                <input name="ocupacion" value={formData.ocupacion} onChange={handleChange} />
+                            </div>
+                        </div>
+
+                        <div className="form-grid-3">
+                            {/* ✅ NUEVO: CANTIDAD DE HIJOS */}
+                            <div className="form-group">
+                                <label>Hijos</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Baby size={18} color="#6B7280"/>
+                                    <input 
+                                        type="number" 
+                                        name="cantidad_hijos" 
+                                        value={formData.cantidad_hijos} 
+                                        onChange={handleChange} 
+                                        min="0"
+                                    />
                                 </div>
                             </div>
-                            
-                            <div className="form-group">
-                                <label>Cant. Hijos</label> {/* NUEVO */}
-                                <input type="number" name="cantidad_hijos" value={formData.cantidad_hijos} onChange={handleChange} placeholder="0" min="0" />
-                            </div>
 
-                            {/* Mostrar solo si es Femenino (opcional, aquí lo dejo visible siempre o condicional) */}
+                            {/* ✅ NUEVO: ÚLTIMO EMBARAZO (SOLO MUJERES) */}
                             {formData.genero === 'F' && (
                                 <div className="form-group">
-                                    <label>Último Embarazo</label> {/* NUEVO */}
-                                    <input name="ultimo_embarazo" value={formData.ultimo_embarazo} onChange={handleChange} placeholder="Fecha o Año" />
+                                    <label>Último Embarazo (Fecha/Año)</label>
+                                    <input 
+                                        type="text" 
+                                        name="ultimo_embarazo" 
+                                        value={formData.ultimo_embarazo} 
+                                        onChange={handleChange}
+                                        placeholder="Ej: 2018 o 12/05/2020"
+                                    />
                                 </div>
                             )}
-                        </div>
-                    </div>
 
-                    {/* --- SECCIÓN 2: CONTACTO Y DOMICILIO --- */}
-                    <div className="form-section-group" style={{marginTop: 20}}>
-                        <h4 className="group-title"><Phone size={16}/> Contacto y Ubicación</h4>
-                        
-                        <div className="form-grid-3">
                             <div className="form-group">
-                                <label>Celular</label>
-                                <input name="telefono" value={formData.telefono} onChange={handleChange} placeholder="Principal" />
-                            </div>
-                            <div className="form-group">
-                                <label>Tel. Fijo</label>
-                                <input name="telefono_domicilio" value={formData.telefono_domicilio} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} />
+                                <label>Celular / Teléfono</label>
+                                <input name="telefono" value={formData.telefono} onChange={handleChange} />
                             </div>
                         </div>
 
                         <div className="form-group">
-                            <label>Dirección Actual</label>
-                            <div className="input-with-icon">
-                                <MapPin size={14} style={{position:'absolute', left:10, top:12, color:'#9CA3AF'}}/>
-                                <input name="direccion" value={formData.direccion} onChange={handleChange} style={{paddingLeft:30}} placeholder="Av. / Calle / Jr..." />
-                            </div>
-                        </div>
-
-                        <div className="form-grid-3">
-                            <div className="form-group">
-                                <label>Departamento</label>
-                                <input name="departamento" value={formData.departamento} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Provincia</label>
-                                <input name="provincia" value={formData.provincia} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Distrito</label>
-                                <input name="distrito" value={formData.distrito} onChange={handleChange} />
-                            </div>
+                            <label>Dirección</label>
+                            <input name="direccion" value={formData.direccion} onChange={handleChange} />
                         </div>
                     </div>
 
                     <div className="modal-footer">
                         <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
                         <button type="submit" className="btn-save" disabled={loading}>
-                            {loading ? 'Guardando...' : 'Guardar Ficha'}
+                            {loading ? 'Guardando...' : (isEditing ? 'Actualizar Paciente' : 'Guardar Paciente')}
                         </button>
                     </div>
                 </form>

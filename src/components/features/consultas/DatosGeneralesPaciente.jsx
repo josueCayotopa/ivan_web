@@ -1,11 +1,18 @@
 import React from 'react';
-import { User, Calendar, MapPin, Phone, Heart, Mail, Briefcase } from 'lucide-react';
+import { 
+    User, Calendar, MapPin, Phone, Mail, Briefcase, 
+    Baby, Heart, Home 
+} from 'lucide-react';
 import './DatosGeneralesPaciente.css';
 
-const DatosGeneralesPaciente = ({ paciente, atencion }) => {
+const DatosGeneralesPaciente = ({ paciente, atencion, formData, handleChange }) => {
+    
+    // Si formData no llega (para evitar pantalla blanca de error)
+    if (!formData) return <div className="error-box">Cargando datos...</div>;
+
     // Calcular edad
     const calcularEdad = (fechaNacimiento) => {
-        if (!fechaNacimiento) return 'N/A';
+        if (!fechaNacimiento) return '-';
         const hoy = new Date();
         const nacimiento = new Date(fechaNacimiento);
         let edad = hoy.getFullYear() - nacimiento.getFullYear();
@@ -16,189 +23,126 @@ const DatosGeneralesPaciente = ({ paciente, atencion }) => {
         return edad;
     };
 
-    // Formatear fecha
     const formatearFecha = (fecha) => {
-        if (!fecha) return 'No especificada';
-        const date = new Date(fecha + 'T00:00:00');
-        return date.toLocaleDateString('es-PE', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
+        if (!fecha) return '';
+        const date = new Date(fecha);
+        return isNaN(date.getTime()) ? fecha : date.toLocaleDateString('es-PE');
     };
 
     return (
-        <div className="datos-generales-container">
-            {/* Título de la sección */}
-            <div className="datos-generales-header">
-                <div className="header-icon">
-                    <User size={24} />
+        <div className="datos-generales-container compact-mode">
+            {/* HEADER: IDENTIDAD (Estático) */}
+            <div className="datos-generales-header compact-header">
+                <div className="identity-block">
+                    <div className="header-icon"><User size={20} /></div>
+                    <div>
+                        <h3 className="patient-name">
+                            {paciente.nombres} {paciente.apellido_paterno} {paciente.apellido_materno}
+                        </h3>
+                        <div className="patient-meta">
+                            <span>{paciente.tipo_documento}: {paciente.documento_identidad}</span>
+                            <span className="separator">•</span>
+                            <span>HC: {paciente.numero_historia}</span>
+                            <span className="separator">•</span>
+                            <span>{calcularEdad(paciente.fecha_nacimiento)} años</span>
+                        </div>
+                    </div>
                 </div>
-                <h3>DATOS GENERALES (Por favor con letra impresa)</h3>
-            </div>
-
-            {/* Grid de datos */}
-            <div className="datos-grid">
                 
-                {/* FILA 1: Nombre Completo y Lugar de Nacimiento */}
-                <div className="dato-item dato-full-width">
-                    <label className="dato-label">
-                        <User size={16} />
-                        Nombre y Apellidos:
-                    </label>
-                    <div className="dato-value dato-resaltado">
-                        {paciente.nombres} {paciente.apellido_paterno} {paciente.apellido_materno}
+                {/* Datos estáticos secundarios (Lugar Nac, Email) */}
+                <div className="secondary-info">
+                    <div className="info-row" title="Lugar de Nacimiento">
+                        <MapPin size={14} /> 
+                        {paciente.lugar_nacimiento || 'Lima'}, {formatearFecha(paciente.fecha_nacimiento)}
                     </div>
-                </div>
-
-                <div className="dato-item">
-                    <label className="dato-label">
-                        <MapPin size={16} />
-                        Lugar y Fecha de Nacimiento:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.lugar_nacimiento || 'No especificado'}, {formatearFecha(paciente.fecha_nacimiento)}
-                    </div>
-                </div>
-
-                {/* FILA 2: Edad, Estado Civil, Hijos, Último Embarazo */}
-                <div className="dato-item dato-small">
-                    <label className="dato-label">
-                        <Calendar size={16} />
-                        Edad:
-                    </label>
-                    <div className="dato-value dato-edad">
-                        {calcularEdad(paciente.fecha_nacimiento)} años
-                    </div>
-                </div>
-
-                <div className="dato-item dato-small">
-                    <label className="dato-label">Estado Civil:</label>
-                    <div className="dato-value dato-input">
-                        _________________
-                    </div>
-                </div>
-
-                <div className="dato-item dato-small">
-                    <label className="dato-label">Cantidad de Hijos:</label>
-                    <div className="dato-value dato-input">
-                        _________________
-                    </div>
-                </div>
-
-                <div className="dato-item dato-small">
-                    <label className="dato-label">Último Embarazo:</label>
-                    <div className="dato-value dato-input">
-                        _________________
-                    </div>
-                </div>
-
-                {/* FILA 3: Celular, Teléfono Domicilio, Teléfono Oficina */}
-                <div className="dato-item">
-                    <label className="dato-label">
-                        <Phone size={16} />
-                        Celular:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.celular || paciente.telefono || 'No especificado'}
-                    </div>
-                </div>
-
-                <div className="dato-item">
-                    <label className="dato-label">
-                        <Phone size={16} />
-                        Teléfono Domicilio:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.telefono_domicilio || 'No especificado'}
-                    </div>
-                </div>
-
-                <div className="dato-item">
-                    <label className="dato-label">
-                        <Phone size={16} />
-                        Teléfono Oficina:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.telefono_oficina || 'No especificado'}
-                    </div>
-                </div>
-
-                {/* FILA 4: DNI y Carnet de Extranjería */}
-                <div className="dato-item">
-                    <label className="dato-label">
-                        DNI ( ) Nº:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.tipo_documento === 'DNI' ? paciente.documento_identidad : '_______________'}
-                    </div>
-                </div>
-
-                <div className="dato-item">
-                    <label className="dato-label">
-                        Carnet de Extranjería ( ) Nº:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.tipo_documento === 'CE' ? paciente.documento_identidad : '_______________'}
-                    </div>
-                </div>
-
-                {/* FILA 5: Dirección Actual */}
-                <div className="dato-item dato-full-width">
-                    <label className="dato-label">
-                        <MapPin size={16} />
-                        Dirección Actual:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.direccion || 'No especificada'}
-                        {paciente.distrito && `, ${paciente.distrito}`}
-                        {paciente.provincia && `, ${paciente.provincia}`}
-                        {paciente.departamento && `, ${paciente.departamento}`}
-                    </div>
-                </div>
-
-                {/* FILA 6: Ocupación */}
-                <div className="dato-item dato-full-width">
-                    <label className="dato-label">
-                        <Briefcase size={16} />
-                        Ocupación:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.ocupacion || 'No especificada'}
-                    </div>
-                </div>
-
-                {/* FILA 7: Email */}
-                <div className="dato-item dato-full-width">
-                    <label className="dato-label">
-                        <Mail size={16} />
-                        Email:
-                    </label>
-                    <div className="dato-value">
-                        {paciente.email || paciente.correo_electronico || 'No especificado'}
+                    <div className="info-row" title="Email">
+                        <Mail size={14} /> 
+                        {paciente.email || paciente.correo_electronico || 'Sin email'}
                     </div>
                 </div>
             </div>
 
-            {/* Información de la atención actual */}
-            <div className="atencion-info">
-                <div className="atencion-badge">
-                    <Calendar size={16} />
-                    <span>
-                        Atención: {new Date(atencion.fecha_atencion).toLocaleDateString('es-PE')} 
-                        - {atencion.hora_ingreso?.substring(0,5)}
-                    </span>
+            {/* BARRA DE EDICIÓN: CAMPOS DE TRABAJO */}
+            <div className="datos-edit-grid">
+                
+                {/* 1. Teléfonos (Prioridad Celular Editable) */}
+                <div className="edit-group">
+                    <label><Phone size={13}/> Contacto</label>
+                    <div className="multi-input-row">
+                        <input 
+                            type="text" 
+                            className="input-highlight"
+                            placeholder="Celular..."
+                            value={formData.telefono_consulta || ''}
+                            onChange={(e) => handleChange('telefono_consulta', e.target.value)}
+                        />
+                        <span className="static-ref" title="Casa / Oficina">
+                            Telf: {paciente.telefono_domicilio || '-'} / {paciente.telefono_oficina || '-'}
+                        </span>
+                    </div>
                 </div>
-                <div className="atencion-badge">
-                    <Heart size={16} />
-                    <span>Historia Clínica: {paciente.numero_historia}</span>
+
+                {/* 2. Dirección y Ocupación */}
+                <div className="edit-group wide">
+                    <label><Home size={13}/> Ubicación & Ocupación</label>
+                    <div className="multi-input-row">
+                        <input 
+                            type="text" 
+                            placeholder="Dirección actual..."
+                            value={formData.direccion_consulta || ''}
+                            onChange={(e) => handleChange('direccion_consulta', e.target.value)}
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Ocupación..."
+                            style={{width: '40%'}}
+                            value={formData.ocupacion_actual || ''}
+                            onChange={(e) => handleChange('ocupacion_actual', e.target.value)}
+                        />
+                    </div>
                 </div>
-                {atencion.medico?.user?.name && (
-                    <div className="atencion-badge">
-                        <User size={16} />
-                        <span>Médico: {atencion.medico.user.name}</span>
+
+                {/* 3. Datos Sociales (Estado Civil, Hijos) */}
+                <div className="edit-group">
+                    <label><Heart size={13}/> Social</label>
+                    <div className="multi-input-row">
+                        <select 
+                            value={formData.estado_civil || ''}
+                            onChange={(e) => handleChange('estado_civil', e.target.value)}
+                            className="select-compact"
+                        >
+                            <option value="">Est. Civil</option>
+                            <option value="Soltero">Soltero</option>
+                            <option value="Casado">Casado</option>
+                            <option value="Conviviente">Conviviente</option>
+                            <option value="Divorciado">Divorciado</option>
+                            <option value="Viudo">Viudo</option>
+                        </select>
+                        <div className="mini-field">
+                            <span>Hijos:</span>
+                            <input 
+                                type="number" 
+                                className="input-number"
+                                value={formData.cantidad_hijos || ''}
+                                onChange={(e) => handleChange('cantidad_hijos', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 4. Ginecobstetricia (Solo Mujeres) */}
+                {paciente.genero === 'F' && (
+                    <div className="edit-group small">
+                        <label><Baby size={13}/> Últ. Embarazo</label>
+                        <input 
+                            type="text" 
+                            placeholder="Año/Fecha"
+                            value={formData.ultimo_embarazo || ''}
+                            onChange={(e) => handleChange('ultimo_embarazo', e.target.value)}
+                        />
                     </div>
                 )}
+
             </div>
         </div>
     );

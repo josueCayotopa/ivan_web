@@ -1,4 +1,4 @@
-// src/layout/Sidebar.jsx (MEJORADO)
+// src/layout/Sidebar.jsx - CONFIGURACIÓN DE ROLES ACTUALIZADA
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -7,8 +7,7 @@ import {
     Calendar,
     UserCog,
     Stethoscope,
-    ClipboardList,
-    FileText
+    ClipboardList
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 
@@ -18,73 +17,90 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
 
     // Obtener rol del usuario
     const userRole = user?.rolName || user?.roles?.[0]?.name || 'Invitado';
-    const role = userRole.toUpperCase();
+    
+    // Normalizar rol para comparación (eliminar acentos y convertir a mayúsculas)
+    const normalizeRole = (role) => {
+        return role
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+            .trim();
+    };
+    
+    const roleNormalized = normalizeRole(userRole);
 
-    // Configuración del menú
+    // Función para verificar si el usuario tiene permiso
+    const hasRole = (allowedRoles) => {
+        return allowedRoles.some(role => normalizeRole(role) === roleNormalized);
+    };
+
+    // ==================== CONFIGURACIÓN DEL MENÚ ====================
     const menuItems = [
+        // INICIO - Todos los roles
         {
             path: '/dashboard',
             label: 'Inicio',
             icon: <Home size={22} />,
-            // AGREGADO 'DOCTOR' AQUÍ:
-            roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'MEDICO', 'ATENCIÓN', 'ATENCION', 'ATENCIÓN AL CLIENTE', 'ATENCION AL CLIENTE', 'RECEPCIONISTA']
+            roles: ['Atención al cliente', 'Doctor', 'admin', 'Administrador']
         },
 
+        // SECCIÓN GESTIÓN
         {
             section: 'GESTIÓN',
-            // AGREGADO 'DOCTOR' AQUÍ:
-            roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'MEDICO', 'ATENCIÓN', 'ATENCION', 'ATENCIÓN AL CLIENTE', 'ATENCION AL CLIENTE', 'RECEPCIONISTA']
+            roles: ['Atención al cliente', 'Doctor', 'admin', 'Administrador']
         },
 
+        // PACIENTES
         {
             path: '/dashboard/pacientes',
             label: 'Pacientes',
             icon: <Users size={22} />,
-            // AGREGADO 'DOCTOR' AQUÍ (Si quieres que vean pacientes):
-            roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'ATENCIÓN', 'ATENCION', 'ATENCIÓN AL CLIENTE', 'RECEPCIONISTA']
+            roles: ['Atención al cliente', 'Doctor', 'admin', 'Administrador']
         },
 
+        // ATENCIONES (Citas)
         {
-            path: '/dashboard/atenciones',  // <--- Ruta en plural
+            path: '/dashboard/atenciones',
             label: 'Atenciones',
             icon: <Calendar size={22} />,
-            // Asegúrate de incluir todos los roles que deben verlo
-            roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'MEDICO', 'ATENCIÓN', 'ATENCION', 'ATENCIÓN AL CLIENTE', 'RECEPCIONISTA']
+            roles: ['Atención al cliente', 'Doctor', 'admin', 'Administrador']
         },
 
+        // CONSULTA MÉDICA (Solo Doctor, Admin, Administrador)
         {
-            path: '/dashboard/consultation', // <--- CAMBIADO a 'consultas' (coincide con tu ruta)
-            label: 'Historial Clínico',   // <--- Nombre más claro para el médico
+            path: '/dashboard/consultation',
+            label: 'Consulta Médica',
             icon: <ClipboardList size={22} />,
-            // Asegúrate de que los roles del doctor estén aquí:
-            roles: ['ADMINISTRADOR', 'ADMIN', 'DOCTOR', 'MÉDICO', 'MEDICO']
+            roles: ['Doctor', 'admin', 'Administrador']
         },
 
+        // MÉDICOS (NO para Doctor)
         {
             path: '/dashboard/medicos',
             label: 'Médicos',
             icon: <Stethoscope size={22} />,
-            // Aquí el Doctor NO suele entrar, pero si quieres que se vea a sí mismo:
-            roles: ['ADMINISTRADOR', 'ADMIN', 'ATENCIÓN', 'ATENCION', 'ATENCIÓN AL CLIENTE']
+            roles: ['Atención al cliente', 'admin', 'Administrador']
         },
 
+        // SECCIÓN ADMINISTRACIÓN (Solo Administrador)
         {
             section: 'ADMINISTRACIÓN',
-            roles: ['ADMINISTRADOR', 'ADMIN']
+            roles: ['Administrador']
         },
 
+        // USUARIOS (Solo Administrador)
         {
             path: '/dashboard/users',
             label: 'Usuarios',
             icon: <UserCog size={22} />,
-            roles: ['ADMINISTRADOR', 'ADMIN']
-        },
+            roles: ['Administrador']
+        }
     ];
 
     // Filtrar items por rol
     const filteredMenuItems = menuItems.filter(item => {
         if (!item.roles) return true;
-        return item.roles.some(r => r.toUpperCase() === role || role === 'ADMINISTRADOR' || role === 'ADMIN');
+        return hasRole(item.roles);
     });
 
     return (
