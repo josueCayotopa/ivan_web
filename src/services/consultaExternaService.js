@@ -95,6 +95,16 @@ const consultaExternaService = {
             return { success: false, message: 'Error al guardar' };
         }
     },
+    async getEstadisticas() {
+        try {
+            // En tu api.php es GET
+            const response = await axios.get('/consultas-externas/stats/general');
+            return response.data;
+        } catch (error) {
+            console.error('Error stats consultas:', error);
+            return { success: false, data: {} };
+        }
+    },
 
     // ==================== OTRAS FUNCIONES (Se mantienen igual) ====================
     async completar(id) {
@@ -128,6 +138,7 @@ const consultaExternaService = {
     estaListaParaCirugia(consulta) {
         return Boolean(consulta.consentimiento_informado && consulta.ficha_completada && consulta.presion_arterial && consulta.peso);
     }
+    
 };
 
 export default consultaExternaService;

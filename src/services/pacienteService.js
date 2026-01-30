@@ -98,19 +98,7 @@ const pacienteService = {
       throw error;
     }
   },
-  async getStats() {
-    try {
-      const response = await fetch(`${API_URL}/pacientes/stats`, {
-        method: 'POST', // Tu API usa POST para stats según api.php
-        headers: getAuthHeaders()
-      });
-      const data = await response.json();
-      return { success: true, data: data.data || {} };
-    } catch (error) {
-      console.error('Error stats pacientes:', error);
-      return { success: false, data: { total: 0, nuevos_mes: 0, activos: 0 } };
-    }
-  },
+ 
 
   // POST /api/v1/pacientes/destroy - Eliminar (Soft Delete)
   async deletePaciente(id) {
@@ -173,7 +161,18 @@ const pacienteService = {
       console.error('Error obteniendo historial:', error);
       throw error;
     }
-  }
+  },
+  // ✅ Agrega/Actualiza esto:
+    async getStats() {
+        try {
+            // En tu api.php es POST
+            const response = await axios.post('/pacientes/stats');
+            return response.data;
+        } catch (error) {
+            console.error('Error stats pacientes:', error);
+            return { success: false, data: { total: 0, nuevos_mes: 0 } };
+        }
+    },
 
 };
 
