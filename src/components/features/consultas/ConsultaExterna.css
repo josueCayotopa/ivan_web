@@ -654,3 +654,31 @@ div.swal2-container {
     border-radius: 8px;
     border: 2px dashed #E5E7EB;
 }
+
+.historial-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.historial-item {
+    display: flex;
+    gap: 15px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    padding: 15px;
+    border-radius: 8px;
+    transition: transform 0.2s;
+    align-items: center;
+}
+
+.historial-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 70px;
+}

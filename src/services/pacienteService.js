@@ -162,18 +162,25 @@ const pacienteService = {
       throw error;
     }
   },
-  // ✅ Agrega/Actualiza esto:
-    async getStats() {
-        try {
-            // En tu api.php es POST
-            const response = await axios.post('/pacientes/stats');
-            return response.data;
-        } catch (error) {
-            console.error('Error stats pacientes:', error);
-            return { success: false, data: { total: 0, nuevos_mes: 0 } };
-        }
-    },
+  // ✅ Versión corregida usando fetch
+  async getStats() {
+    try {
+      const response = await fetch(`${API_URL}/pacientes/stats`, {
+        method: 'POST', // Confirmaste que en tu api.php es POST
+        headers: getAuthHeaders(),
+      });
 
+      const data = await response.json();
+
+      return {
+        success: data.success || response.ok,
+        data: data.data || { total: 0, nuevos_mes: 0 }
+      };
+    } catch (error) {
+      console.error('Error obteniendo stats de pacientes:', error);
+      return { success: false, data: { total: 0, nuevos_mes: 0 } };
+    }
+  },
 };
 
 export default pacienteService;

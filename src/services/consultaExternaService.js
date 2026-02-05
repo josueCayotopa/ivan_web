@@ -50,7 +50,15 @@ const consultaExternaService = {
             return { success: false, message: 'Error de conexión' };
         }
     },
-
+    async getHistorialPorPaciente(pacienteId) {
+        try {
+            const response = await axios.get(`/consultas-externas/paciente/${pacienteId}/historial`);
+            return response.data;
+        } catch (error) {
+            console.error('Error al cargar historial:', error);
+            return { success: false, data: [] };
+        }
+    },
     async create(payload) {
         try {
             const response = await axios.post('/consultas-externas', payload);
@@ -138,7 +146,7 @@ const consultaExternaService = {
     estaListaParaCirugia(consulta) {
         return Boolean(consulta.consentimiento_informado && consulta.ficha_completada && consulta.presion_arterial && consulta.peso);
     }
-    
+
 };
 
 export default consultaExternaService;

@@ -11,6 +11,7 @@ import MotivosEsteticosTab from './MotivosEsteticosTab';
 import VitalesEvaluacionTab from './VitalesEvaluacionTab';
 import PlanTratamientoTab from './PlanTratamientoTab';
 import ImagenesVideosTab from './ImagenesVideosTab';
+import HistorialClinicoTab from './HistorialClinicoTab';
 import { Image as ImageIcon } from 'lucide-react';
 import './ConsultaExterna.css';
 
@@ -125,6 +126,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         }
     }, [atencion]);
 
+
     // Auto-calcular IMC cuando cambian peso o talla
     useEffect(() => {
         if (formData.peso && formData.talla) {
@@ -138,6 +140,8 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         }
     }, [formData.peso, formData.talla]);
 
+
+  
     // ==================== FUNCIONES DE CARGA ====================
 
     // ==================== CARGAR DATOS (Lectura Optimizada) ====================
@@ -467,6 +471,13 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                     >
                         <ImageIcon size={18} />
                         Imágenes & Videos
+                    </button>
+                    <button
+                        className={`nav-item ${activeTab === 'historial' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('historial')}
+                    >
+                        <FileText size={18} />
+                        Historial Clínico
                     </button>
                 </nav>
 
@@ -908,9 +919,13 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                             pacienteId={p.id}        // ✅ NUEVO: Para buscar TODO el historial del paciente
                         />
                     )}
+                    {activeTab === 'historial' && (
+                        <HistorialClinicoTab pacienteId={p.id} />
+                    )}
 
 
                 </div>
+
             </div>
         </div>
     );
