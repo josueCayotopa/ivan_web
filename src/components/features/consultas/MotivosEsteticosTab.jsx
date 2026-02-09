@@ -3,11 +3,12 @@ import React from "react";
 // 👇 AGREGA ESTA LÍNEA OBLIGATORIAMENTE
 import { User, FileText, Scissors } from 'lucide-react'; 
 
-const MotivosEsteticosTab = ({ formData, handleChange }) => {
-  // Toggle genérico para checkbox usando handleChange (si lo necesitas en el futuro)
-  const toggle = (field) => handleChange(field, !formData[field]);
+const MotivosEsteticosTab = ({ formData, handleChange, readOnly = false }) => {
 
   return (
+    
+
+    
     <div className="form-section fade-in-right">
       <h3 className="section-title">Motivos Estéticos</h3>
 

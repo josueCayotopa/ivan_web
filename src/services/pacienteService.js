@@ -11,27 +11,28 @@ const getAuthHeaders = () => {
 };
 
 const pacienteService = {
-  // POST /api/v1/pacientes - Listar pacientes (Paginado)
-  async getPacientes(page = 1, search = '') {
-    try {
-      const response = await fetch(`${API_URL}/pacientes`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ page, search })
-      });
+ async getPacientes(page = 1, search = '') {
+  try {
+    const response = await fetch(`${API_URL}/pacientes`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ page, search })
+    });
 
-      const data = await response.json();
+    const result = await response.json(); // 'result' es el objeto completo con "success" y "data"
 
-      return {
-        success: data.success || response.ok,
-        data: data.data?.data || [], // Ajuste para paginación de Laravel
-        total: data.data?.total || 0
-      };
-    } catch (error) {
-      console.error('Error obteniendo pacientes:', error);
-      throw error;
-    }
-  },
+    return {
+      success: result.success,
+      // Accedemos a result.data (paginación) y luego a .data (array de pacientes)
+      data: result.data?.data || [], 
+      total: result.data?.total || 0,
+      last_page: result.data?.last_page || 1
+    };
+  } catch (error) {
+    console.error('Error obteniendo pacientes:', error);
+    throw error;
+  }
+},
 
   // POST /api/v1/pacientes/por-documento - Buscar por DNI (Para el Formulario)
   async searchByDocument(documento) {

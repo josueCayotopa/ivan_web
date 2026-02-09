@@ -17,7 +17,7 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
 
     // Obtener rol del usuario
     const userRole = user?.rolName || user?.roles?.[0]?.name || 'Invitado';
-    
+
     // Normalizar rol para comparación (eliminar acentos y convertir a mayúsculas)
     const normalizeRole = (role) => {
         return role
@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
             .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
             .trim();
     };
-    
+
     const roleNormalized = normalizeRole(userRole);
 
     // Función para verificar si el usuario tiene permiso
@@ -80,6 +80,12 @@ const Sidebar = ({ isOpen, user, onLinkClick }) => {
             label: 'Médicos',
             icon: <Stethoscope size={22} />,
             roles: ['Atención al cliente', 'admin', 'Administrador']
+        },
+        {
+            path: '/dashboard/historias-clinicas',
+            label: 'Historias Clínicas',
+            icon: <ClipboardList size={22} />, // Reutilizando el icono de lista
+            roles: ['Doctor', 'admin', 'Administrador']
         },
 
         // SECCIÓN ADMINISTRACIÓN (Solo Administrador)

@@ -234,17 +234,9 @@ const Pacientes = () => {
                                     </td>
                                     <td>
                                         <div className="patient-name-cell">
-                                            <div className="patient-avatar">
-                                                {paciente.nombres?.charAt(0)}{paciente.apellido_paterno?.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <div className="patient-name">
-                                                    {paciente.nombres} {paciente.apellido_paterno} {paciente.apellido_materno}
-                                                </div>
-                                                <div className="patient-subtitle">
-                                                    {paciente.email || 'Sin email'}
-                                                </div>
-                                            </div>
+                                           
+                                                {`${paciente.nombres || ''} ${paciente.apellido_paterno || ''} ${paciente.apellido_materno || ''}`.trim() || 'Sin Nombre'}
+                                           
                                         </div>
                                     </td>
                                     <td>

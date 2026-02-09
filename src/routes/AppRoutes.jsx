@@ -16,7 +16,7 @@ import Users from '../page/dashboard/Users.jsx';
 import Medicos from '../page/dashboard/Medicos.jsx';
 import Pacientes from '../page/dashboard/Pacientes.jsx';
 import Consultas from '../page/dashboard/Consultas.jsx';
-import HistoriaClinica from '../page/dashboard/HistoriaClinica'; // Asegúrate de importar TU archivo // Descomentar cuando exista
+import HistoriaClinica from '../page/dashboard/HistoriasClinicas.jsx'; // Asegúrate de importar TU archivo // Descomentar cuando exista
 
 const AppRoutes = () => {
   return (
@@ -58,6 +58,7 @@ const AppRoutes = () => {
         <Route path="pacientes" element={<Pacientes />} />
         <Route path="atenciones" element={<Atenciones />} />
         <Route path="consultation" element={<Consultas />} />
+        <Route path="historias-clinicas" element={<HistoriaClinica />} />
       </Route>
 
       {/* Ruta 404 - Redirigir a login o dashboard */}

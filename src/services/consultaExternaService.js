@@ -15,6 +15,16 @@ const consultaExternaService = {
             return { success: false, message: 'Error al cargar consultas' };
         }
     },
+    async getUltimaConsulta(pacienteId) {
+        try {
+            // Asumiendo que crearás este endpoint en Laravel
+            const response = await axios.get(`/consultas-externas/paciente/${pacienteId}/ultima`);
+            return response.data; // { success: true, data: { ... } }
+        } catch (error) {
+            console.error('Error al obtener la última consulta:', error);
+            return { success: false };
+        }
+    },
 
     async getById(id) {
         try {

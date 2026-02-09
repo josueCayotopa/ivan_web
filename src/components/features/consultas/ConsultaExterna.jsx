@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     User, FileText, Activity, Stethoscope, ClipboardList,
-    Save, ArrowLeft, Heart, DollarSign, FileSignature, AlertCircle
+    Save, ArrowLeft, Heart, DollarSign, FileSignature, AlertCircle,
+    X, Image as ImageIcon, Search
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import consultaExternaService from '../../../services/consultaExternaService';
@@ -12,31 +13,24 @@ import VitalesEvaluacionTab from './VitalesEvaluacionTab';
 import PlanTratamientoTab from './PlanTratamientoTab';
 import ImagenesVideosTab from './ImagenesVideosTab';
 import HistorialClinicoTab from './HistorialClinicoTab';
-import { Image as ImageIcon } from 'lucide-react';
+import VisualizadorConsulta from './VisualizadorHistoriaClinica';
 import './ConsultaExterna.css';
 
 const ConsultaExterna = ({ atencion, onClose }) => {
     const [activeTab, setActiveTab] = useState('antecedentes');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [consultaSeleccionadaHistorial, setConsultaSeleccionadaHistorial] = useState(null);
 
     const p = atencion?.paciente || {};
 
     // ==================== ESTADO DEL FORMULARIO ====================
     const [formData, setFormData] = useState({
-        // IDENTIFICADORES
         id: null,
         atencion_id: atencion?.id || null,
-
-        // DATOS ACTUALES
         cantidad_hijos: '',
         ultimo_embarazo: '',
-        // telefono_consulta: p.celular || p.telefono || '',
-        // direccion_consulta: p.direccion || '',
-        // ocupacion_actual: p.ocupacion || '',
-        estado_civil: '', // <--- AGREGA ESTO
-
-        // ANTECEDENTES CLÍNICOS (Booleanos)
+        estado_civil: '',
         diabetes: false,
         hipertension_arterial: false,
         cancer: false,
@@ -44,55 +38,32 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         otros_antecedentes: '',
         tratamiento_actual: '',
         intervenciones_quirurgicas: '',
-
-        // ENFERMEDADES INFECTOCONTAGIOSAS (Booleanos)
-        enfermedades_infectocontagiosas: false,
         infecciones_urinarias: false,
-        infecciones_urinarias_detalle: '',
         pulmones: false,
         infec_gastrointestinal: false,
         enf_transmision_sexual: false,
         hepatitis: false,
-        hepatitis_tipo: '',
         hiv: false,
         otros_enfermedades: '',
-
-        // ALERGIAS (CRÍTICO PARA CIRUGÍA)
         medicamentos_alergia: false,
         medicamentos_alergia_detalle: '',
         alimentos_alergia: false,
         alimentos_alergia_detalle: '',
         otros_alergias: '',
-
-        // FISIOLÓGICOS
         fecha_ultima_regla: '',
         regular: false,
         irregular: false,
-
-        // HÁBITOS NOCIVOS
         tabaco: false,
         alcohol: false,
         farmacos: false,
-
-        // MARKETING/REFERENCIA
-        instagram_dr_ivan_pareja: false,
-        facebook_dr_ivan_pareja: false,
-        radio: false,
-        tv: false,
-        internet: false,
         referencia_otro: '',
-
-        // MOTIVOS ESTÉTICOS (NUEVA VERSIÓN LIMPIA)
         motivos_zonas: '',
         motivos_tratamientos_previos: '',
         expectativa_paciente: '',
-        // ✅ Estos 3 reemplazan a los 20 checkboxes de arriba
         motivo_facial: '',
         motivo_corporal: '',
         motivo_capilar: '',
         otros_motivos: '',
-
-        // VITALES & EVALUACIÓN
         presion_arterial_sistolica: '',
         presion_arterial_diastolica: '',
         frecuencia_cardiaca: '',
@@ -100,304 +71,194 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         talla: '',
         imc: '',
         evaluacion_zona: '',
-
-        // PLAN DE TRATAMIENTO
         procedimiento_propuesto: '',
         tecnica_utilizar: '',
         productos_usar: '',
         numero_sesiones: 1,
         precio_estimado: '',
         proxima_cita: '',
-
-        // INDICACIONES
         indicaciones_pre: '',
         indicaciones_post: '',
-
-        // CONTROL
         ficha_completada: false
-
     });
 
     // ==================== EFFECTS ====================
 
     useEffect(() => {
-        if (atencion?.id) {
-            cargarConsulta();
-        }
+        if (atencion?.id) cargarConsulta();
     }, [atencion]);
 
-
-    // Auto-calcular IMC cuando cambian peso o talla
     useEffect(() => {
         if (formData.peso && formData.talla) {
             const imc = consultaExternaService.calcularIMCLocal(
                 parseFloat(formData.peso),
                 parseFloat(formData.talla)
             );
-            if (imc) {
-                setFormData(prev => ({ ...prev, imc }));
-            }
+            if (imc) setFormData(prev => ({ ...prev, imc }));
         }
     }, [formData.peso, formData.talla]);
 
+    // ==================== LÓGICA DE CARGA EN CASCADA ====================
 
-  
-    // ==================== FUNCIONES DE CARGA ====================
-
-    // ==================== CARGAR DATOS (Lectura Optimizada) ====================
     const cargarConsulta = async () => {
-        if (!atencion?.id) return;
-
+        if (!atencion?.id || !p?.id) return;
         setLoading(true);
-        try {
-            console.log('🔍 Buscando historia para atención ID:', atencion.id);
 
-            // Llamamos al endpoint que devuelve todo (Consulta + Atención + Paciente Fresco)
+        try {
+            // 1. Intentar cargar la consulta de HOY
             const response = await consultaExternaService.getByAtencionId(atencion.id);
 
             if (response.success && response.data) {
-                const data = response.data;
-                console.log('✅ Historia encontrada:', data);
-
-                // 1. Obtener Paciente Fresco (Prioridad: API > Prop)
-                // Esto asegura que veamos los datos sociales más recientes
-                const pacienteFresco = data.atencion?.paciente || p;
-
-                // 2. Parsear presión arterial (de "120/80" a dos campos)
-                const { sistolica, diastolica } = consultaExternaService.parsearPresion(
-                    data.presion_arterial || ''
-                );
-
-                // 3. Actualizar Estado (Sin usar useState dentro)
-                setFormData(prev => ({
-                    ...prev,
-
-                    // === IDENTIFICADORES ===
-                    id: data.id,
-                    atencion_id: data.atencion_id,
-                    medico_id: data.medico_id || atencion.medico_id,
-
-                    // === DATOS SOCIALES (Leemos del Paciente Fresco) ===
-                    cantidad_hijos: pacienteFresco.cantidad_hijos || '',
-                    ultimo_embarazo: pacienteFresco.ultimo_embarazo || '',
-                    estado_civil: pacienteFresco.estado_civil || '',
-                    ocupacion_actual: pacienteFresco.ocupacion || '',
-                    telefono_consulta: pacienteFresco.celular || pacienteFresco.telefono || '',
-                    direccion_consulta: pacienteFresco.direccion || '',
-
-                    // === MOTIVOS ESTÉTICOS (Nuevos campos de texto) ===
-                    motivos_zonas: data.motivos_zonas || '',
-                    motivos_tratamientos_previos: data.motivos_tratamientos_previos || '',
-                    expectativa_paciente: data.expectativa_paciente || '',
-                    motivo_facial: data.motivo_facial || '',
-                    motivo_corporal: data.motivo_corporal || '',
-                    motivo_capilar: data.motivo_capilar || '',
-                    otros_motivos: data.otros_motivos || '',
-
-                    // === ANTECEDENTES (Booleanos) ===
-                    diabetes: Boolean(data.diabetes),
-                    hipertension_arterial: Boolean(data.hipertension_arterial),
-                    cancer: Boolean(data.cancer),
-                    artritis: Boolean(data.artritis),
-                    otros_antecedentes: data.otros_antecedentes || '',
-                    tratamiento_actual: data.tratamiento_actual || '',
-                    intervenciones_quirurgicas: data.intervenciones_quirurgicas || '',
-
-                    // === INFECTOCONTAGIOSAS ===
-                    enfermedades_infectocontagiosas: Boolean(data.enfermedades_infectocontagiosas),
-                    infecciones_urinarias: Boolean(data.infecciones_urinarias),
-                    infecciones_urinarias_detalle: data.infecciones_urinarias_detalle || '',
-                    pulmones: Boolean(data.pulmones),
-                    infec_gastrointestinal: Boolean(data.infec_gastrointestinal),
-                    enf_transmision_sexual: Boolean(data.enf_transmision_sexual),
-                    hepatitis: Boolean(data.hepatitis),
-                    hepatitis_tipo: data.hepatitis_tipo || '',
-                    hiv: Boolean(data.hiv),
-                    otros_enfermedades: data.otros_enfermedades || '',
-
-                    // === ALERGIAS ===
-                    medicamentos_alergia: Boolean(data.medicamentos_alergia),
-                    medicamentos_alergia_detalle: data.medicamentos_alergia_detalle || '',
-                    alimentos_alergia: Boolean(data.alimentos_alergia),
-                    alimentos_alergia_detalle: data.alimentos_alergia_detalle || '',
-                    otros_alergias: data.otros_alergias || '',
-
-                    // === FISIOLÓGICOS / HÁBITOS ===
-                    fecha_ultima_regla: data.fecha_ultima_regla || '',
-                    regular: Boolean(data.regular),
-                    irregular: Boolean(data.irregular),
-                    tabaco: Boolean(data.tabaco),
-                    alcohol: Boolean(data.alcohol),
-                    farmacos: Boolean(data.farmacos),
-
-                    // === MARKETING (Viene de la Atención) ===
-                    // Mapeamos el campo único de texto a los booleanos visuales si es necesario
-                    // o leemos directo si el backend aún los manda
-                    instagram_dr_ivan_pareja: Boolean(data.instagram_dr_ivan_pareja),
-                    facebook_dr_ivan_pareja: Boolean(data.facebook_dr_ivan_pareja),
-                    radio: Boolean(data.radio),
-                    tv: Boolean(data.tv),
-                    internet: Boolean(data.internet),
-                    referencia_otro: data.referencia_otro || '',
-
-                    // === VITALES & EVALUACIÓN ===
-                    presion_arterial_sistolica: sistolica,
-                    presion_arterial_diastolica: diastolica,
-                    frecuencia_cardiaca: data.frecuencia_cardiaca || '',
-                    peso: data.peso || '',
-                    talla: data.talla || '',
-                    imc: data.imc || '',
-                    evaluacion_zona: data.evaluacion_zona || '',
-
-                    // === PLAN DE TRATAMIENTO ===
-                    procedimiento_propuesto: data.procedimiento_propuesto || '',
-                    tecnica_utilizar: data.tecnica_utilizar || '',
-                    productos_usar: data.productos_usar || '',
-                    numero_sesiones: data.numero_sesiones || 1,
-                    precio_estimado: data.precio_estimado || '',
-                    proxima_cita: data.proxima_cita || '',
-
-                    // === INDICACIONES ===
-                    indicaciones_pre: data.indicaciones_pre || '',
-                    indicaciones_post: data.indicaciones_post || '',
-
-                    // === CONTROL ===
-                    ficha_completada: Boolean(data.ficha_completada)
-                }));
+                console.log('✅ Modo Edición: Cargando consulta actual');
+                actualizarEstadoConData(response.data, false);
             } else {
-                console.log('✨ Nueva Historia (Modo Creación)');
-                // Si es nueva, precargamos datos del paciente (props)
-                setFormData(prev => ({
-                    ...prev,
-                    id: null, // Asegurar que es null para crear
-                    cantidad_hijos: p.cantidad_hijos || '',
-                    ultimo_embarazo: p.ultimo_embarazo || '',
-                    estado_civil: p.estado_civil || '',
-                    ocupacion_actual: p.ocupacion || '',
-                    telefono_consulta: p.celular || p.telefono || '',
-                    direccion_consulta: p.direccion || '',
-                    // El marketing se lee de la atención si existe
-                    referencia_otro: atencion.medio_captacion || ''
-                }));
+                // 2. Si no hay hoy, buscar la ÚLTIMA consulta histórica del paciente
+                console.log('✨ Modo Creación: Buscando última consulta histórica');
+                const resUltima = await consultaExternaService.getUltimaConsulta(p.id);
+
+                if (resUltima.success && resUltima.data) {
+                    actualizarEstadoConData(resUltima.data, true);
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Datos recuperados',
+                        text: 'Se han clonado los antecedentes y motivos de la última consulta.',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    inicializarFormularioNuevo();
+                }
             }
         } catch (error) {
-            console.error('❌ Error al cargar consulta:', error);
-            Swal.fire({
-                title: 'Error',
-                text: 'No se pudo cargar la historia clínica. Verifique su conexión.',
-                icon: 'error'
-            });
+            console.error("❌ Error en carga:", error);
         } finally {
             setLoading(false);
         }
     };
-    // ==================== FUNCIÓN DE GUARDADO ====================
+
+    const actualizarEstadoConData = (data, esPreCarga = false) => {
+        const { sistolica, diastolica } = consultaExternaService.parsearPresion(data.presion_arterial || '');
+
+        setFormData(prev => ({
+            ...prev,
+            id: esPreCarga ? null : data.id,
+            atencion_id: atencion.id,
+
+            // --- CONVERSIÓN DE ENTEROS (0/1) A BOOLEANOS (true/false) ---
+            // Antecedentes
+            diabetes: Boolean(data.diabetes),
+            hipertension_arterial: Boolean(data.hipertension_arterial),
+            cancer: Boolean(data.cancer),
+            artritis: Boolean(data.artritis),
+
+            // Infectocontagiosas
+            infecciones_urinarias: Boolean(data.infecciones_urinarias),
+            pulmones: Boolean(data.pulmones),
+            infec_gastrointestinal: Boolean(data.infec_gastrointestinal),
+            enf_transmision_sexual: Boolean(data.enf_transmision_sexual),
+            hepatitis: Boolean(data.hepatitis),
+            hiv: Boolean(data.hiv),
+
+            // Alergias
+            medicamentos_alergia: Boolean(data.medicamentos_alergia),
+            alimentos_alergia: Boolean(data.alimentos_alergia),
+
+            // Hábitos
+            tabaco: Boolean(data.tabaco),
+            alcohol: Boolean(data.alcohol),
+            farmacos: Boolean(data.farmacos),
+
+            // Fisiológicos (Mujeres)
+            regular: Boolean(data.regular),
+            irregular: Boolean(data.irregular),
+
+            // Marketing
+            instagram_dr_ivan_pareja: Boolean(data.instagram_dr_ivan_pareja),
+            facebook_dr_ivan_pareja: Boolean(data.facebook_dr_ivan_pareja),
+            radio: Boolean(data.radio),
+            tv: Boolean(data.tv),
+            internet: Boolean(data.internet),
+
+            // --- CAMPOS DE TEXTO (Se mantienen igual) ---
+            otros_antecedentes: data.otros_antecedentes || '',
+            tratamiento_actual: data.tratamiento_actual || '',
+            intervenciones_quirurgicas: data.intervenciones_quirurgicas || '',
+            medicamentos_alergia_detalle: data.medicamentos_alergia_detalle || '',
+            alimentos_alergia_detalle: data.alimentos_alergia_detalle || '',
+            motivo_facial: data.motivo_facial || '',
+            motivo_corporal: data.motivo_corporal || '',
+            motivo_capilar: data.motivo_capilar || '',
+            expectativa_paciente: data.expectativa_paciente || '',
+            motivos_zonas: data.motivos_zonas || '',
+            procedimiento_propuesto: data.procedimiento_propuesto || '',
+
+            // Vitales
+            peso: data.peso || '',
+            talla: data.talla || '',
+            imc: data.imc || '',
+            presion_arterial_sistolica: esPreCarga ? '' : sistolica,
+            presion_arterial_diastolica: esPreCarga ? '' : diastolica,
+            frecuencia_cardiaca: esPreCarga ? '' : (data.frecuencia_cardiaca || ''),
+
+            referencia_otro: data.referencia_otro || atencion.medio_captacion || ''
+        }));
+    };
+    const inicializarFormularioNuevo = () => {
+        setFormData(prev => ({
+            ...prev,
+            id: null,
+            atencion_id: atencion.id,
+            estado_civil: p.estado_civil || '',
+            referencia_otro: atencion.medio_captacion || ''
+        }));
+    };
+
+    // ==================== ACCIONES ====================
 
     const handleSubmit = async () => {
-        // Validación mínima
         if (!formData.procedimiento_propuesto?.trim()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campo requerido',
-                text: 'Debe especificar el procedimiento propuesto',
-                confirmButtonColor: '#FFC107'
-            });
+            Swal.fire({ icon: 'warning', title: 'Requerido', text: 'Especifique el procedimiento propuesto' });
             return;
         }
 
         setSaving(true);
-
         try {
-            // Combinar presión arterial
             const presion_arterial = consultaExternaService.formatearPresion(
                 formData.presion_arterial_sistolica,
                 formData.presion_arterial_diastolica
             );
 
-            // Preparar payload
-            const payload = {
-                ...formData,
-                presion_arterial,
-                atencion_id: atencion.id
-            };
-
-            console.log('📤 Enviando consulta externa:', payload);
-
-            // 🔥 SAVE INTELIGENTE: decide automáticamente crear o actualizar
+            const payload = { ...formData, presion_arterial };
             const response = await consultaExternaService.save(payload, formData.id);
 
-            console.log('📥 Respuesta del servidor:', response);
-
-            if (response.success || (response.id && response.atencion_id)) {
-
-                // Actualizar ID si es creación nueva
-                // Nota: Si response trae la data directa, usamos response.id
+            if (response.success || response.id) {
                 const nuevoId = response.data?.id || response.id;
+                if (!formData.id) setFormData(prev => ({ ...prev, id: nuevoId }));
 
-                if (!formData.id && nuevoId) {
-                    setFormData(prev => ({ ...prev, id: nuevoId }));
-                }
-
-                // Mensaje de éxito
-                await Swal.fire({
-                    icon: 'success',
-                    title: formData.id ? '¡Actualizada!' : '¡Creada!',
-                    text: `Consulta externa guardada exitosamente`,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Aceptar',
-                    confirmButtonColor: '#FFC107',
-                    timer: 3000
-                });
-
-                // Cerrar modal
+                await Swal.fire({ icon: 'success', title: 'Guardado', timer: 2000, showConfirmButton: false });
                 onClose();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message || 'Error al guardar la consulta',
-                    confirmButtonColor: '#EF4444'
-                });
             }
         } catch (error) {
-            console.error('❌ Error en handleSubmit:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Ocurrió un error al guardar',
-                confirmButtonColor: '#EF4444'
-            });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar la consulta' });
         } finally {
             setSaving(false);
         }
     };
 
-    // ==================== FUNCIÓN PARA CAMBIAR CAMPOS ====================
-
-    const handleChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleCheckboxChange = (field) => {
-        setFormData(prev => ({ ...prev, [field]: !prev[field] }));
-    };
-
-    // ==================== VALIDAR SI ESTÁ LISTA PARA CIRUGÍA ====================
-
-    const estaListaParaCirugia = () => {
-        return consultaExternaService.estaListaParaCirugia(formData);
-    };
+    const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+    const handleCheckboxChange = (field) => setFormData(prev => ({ ...prev, [field]: !prev[field] }));
+    const estaListaParaCirugia = () => consultaExternaService.estaListaParaCirugia(formData);
 
     // ==================== RENDER ====================
 
-    if (loading) {
-        return (
-            <div className="consulta-loading">
-                <div className="spinner"></div>
-                <p>Cargando historia clínica...</p>
-            </div>
-        );
-    }
+    if (loading) return (
+        <div className="consulta-loading">
+            <div className="spinner"></div>
+            <p>Sincronizando historia clínica...</p>
+        </div>
+    );
 
     return (
         <div className="consulta-container">
@@ -920,10 +781,35 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                         />
                     )}
                     {activeTab === 'historial' && (
-                        <HistorialClinicoTab pacienteId={p.id} />
+                        <>
+                            {/* LISTADO NORMAL */}
+                            <HistorialClinicoTab
+                                pacienteId={p.id}
+                                onVerDetalle={(consulta) => setConsultaSeleccionadaHistorial(consulta)}
+                            />
+
+                            {/* MODAL FLOTANTE (Solo se muestra si hay una consulta seleccionada) */}
+                            {consultaSeleccionadaHistorial && (
+                                <div className="modal-overlay" style={{ zIndex: 9999 }}>
+                                    <div className="modal-content" style={{ maxWidth: '95%', width: '1300px', height: '90vh' }}>
+                                        <div className="modal-header">
+                                            <h3>Vista de Registro Anterior</h3>
+                                            <button className="btn-close" onClick={() => setConsultaSeleccionadaHistorial(null)}>
+                                                <X size={20} />
+                                            </button>
+                                        </div>
+                                        <div className="modal-body" style={{ padding: 0, overflow: 'hidden' }}>
+                                            <VisualizadorConsulta
+                                                consulta={consultaSeleccionadaHistorial}
+                                                paciente={p}
+                                                onClose={() => setConsultaSeleccionadaHistorial(null)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
-
-
                 </div>
 
             </div>
