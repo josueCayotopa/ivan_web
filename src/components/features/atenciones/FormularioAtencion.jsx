@@ -46,6 +46,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         observaciones: '',
         medio_captacion: '',
         tipo_atencion: '',
+        monto_total: '',
         estado: 'Programada'
     });
 
@@ -95,7 +96,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     motivo_consulta: atencion.motivo_consulta || '',
                     observaciones: atencion.observaciones || '',
                     medio_captacion: atencion.medio_captacion || '',
-                    monto: atencion.monto || '' // Agregamos el monto que pediste antes
+                    monto_total: atencion.monto_total || '' // Agregamos el monto que pediste antes
                 });
             }
         };
@@ -135,49 +136,31 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         setLoading(true);
 
         try {
-            // Preparar el payload con los datos del formulario
-            const payload = { ...formData };
-
-            // Regla de negocio: si es hombre, limpiar campo de último embarazo
-            if (payload.genero === 'M') {
-                payload.ultimo_embarazo = null;
-            }
+            // ✅ Extraemos 'hora_ingreso' para NO enviarla (según tu petición)
+            // El campo 'monto_total' ya viene dentro de formData
+            const { hora_ingreso, ...payload } = formData;
 
             let response;
-            if (isEditing) {
-                // ✅ PARA EDITAR: Enviamos un solo objeto que incluya el ID
-                // Esto coincide con tu pacienteService.js que hace JSON.stringify(pacienteData)
-                response = await pacienteService.updatePaciente({
-                    id: paciente.id,
-                    ...payload
-                });
+            if (esEdicion) {
+                // POST /atenciones/update
+                response = await atencionService.updateAtencion(atencion.id, payload);
             } else {
-                // PARA CREAR: Enviamos los datos normalmente
-                response = await pacienteService.createPaciente(payload);
+                // POST /atenciones/store
+                response = await atencionService.createAtencion(payload);
             }
 
-            // Verificamos si la respuesta fue exitosa (tu backend devuelve success: true)
             if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: `Paciente ${isEditing ? 'actualizado' : 'registrado'} correctamente`,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-
+                Swal.fire({ icon: 'success', title: 'Éxito', text: 'Atención guardada', timer: 1500 });
                 if (onSuccess) onSuccess(response.data);
                 onClose();
             } else {
                 throw new Error(response.message || 'Error al guardar');
             }
-
         } catch (error) {
-            console.error(error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.message || 'No se pudo guardar el paciente'
+                text: error.response?.data?.message || 'Error en el servidor'
             });
         } finally {
             setLoading(false);
@@ -307,20 +290,15 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Monto de Atención (S/.)</label>
-                            <div className="input-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontWeight: 'bold', color: '#64748B' }}>S/</span>
-                                <input
-                                    type="number"
-                                    name="monto"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={formData.monto}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                    style={{ flex: 1 }}
-                                />
-                            </div>
+                            <label>Monto Total (S/)</label>
+                            <input
+                                type="number"
+                                name="monto_total" // ✅ Debe ser monto_total
+                                value={formData.monto_total} // ✅ Debe ser monto_total
+                                onChange={handleChange}
+                                placeholder="0.00"
+                                step="0.01"
+                            />
                         </div>
 
 

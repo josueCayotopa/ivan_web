@@ -33,8 +33,9 @@ const atencionService = {
         return await axios.post('/atenciones/store', atencionData);
     },
 
-    // POST Actualizar atención
+    // atencionService.js
     async updateAtencion(id, atencionData) {
+        // Enviamos el id dentro del cuerpo del POST como espera tu controlador
         return await axios.post('/atenciones/update', { id, ...atencionData });
     },
 
