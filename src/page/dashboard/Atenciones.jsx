@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Calendar, Clock, User, Stethoscope, FileText, Plus,
-    Search, Filter, LayoutGrid, List, Eye, Award
+    Search, Filter, LayoutGrid, List, Eye, Award, Edit2
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../services/atencionService.js';
@@ -101,6 +101,16 @@ const Atenciones = () => {
             'Atendida': '#D1FAE5',
         };
         return colores[estado] || '#F3F4F6';
+    };
+    const handleCambiarEstado = async (id, nuevoEstado) => {
+        try {
+            const res = await atencionService.cambiarEstado(id, nuevoEstado);
+            if (res.success) {
+                cargarAtenciones(); // Recargar lista
+            }
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo cambiar el estado', 'error');
+        }
     };
 
     return (
@@ -260,81 +270,78 @@ const Atenciones = () => {
                                             {atencion.estado}
                                         </div>
 
-                                        <button className="btn-action" onClick={() => handleAbrirModal(atencion)}>
-                                            Ver Detalle
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                            <button className="btn-action" onClick={() => handleAbrirModal(atencion)}>
+                                                <Edit2 size={14} /> Editar
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* VISTA: TABLA */}
+                    {/* VISTA: TABLA (Corregida y Responsiva) */}
                     {viewMode === 'table' && (
-                        <div className="table-responsive-container fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
-                            <table className="patients-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                        <div className="table-responsive-container fade-in-up">
+                            <table className="patients-table">
+                                <thead>
                                     <tr>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Hora</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Paciente</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Médico</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Especialidad</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Tipo</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Estado</th>
-                                        <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Acción</th>
+                                        <th>Hora</th>
+                                        <th>Paciente</th>
+                                        <th>Médico</th>
+                                        <th>Especialidad</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th style={{ textAlign: 'right' }}>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {atenciones.map((atencion) => (
-                                        <tr key={atencion.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                            <td style={{ padding: '16px 24px', color: '#374151', fontWeight: 500 }}>
+                                        <tr key={atencion.id}>
+                                            <td className="time-cell">
                                                 {atencion.hora_ingreso?.substring(0, 5)}
                                             </td>
-                                            <td style={{ padding: '16px 24px' }}>
-                                                <div style={{ fontWeight: 600, color: '#111827' }}>
-                                                    {atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno}
-                                                </div>
-                                                <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-                                                    {atencion.paciente?.documento_identidad}
-                                                </div>
+                                            <td>
+                                                <div className="patient-name">{atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno}</div>
+                                                <div className="patient-subtitle">{atencion.paciente?.documento_identidad}</div>
                                             </td>
-                                            {/* ✅ MÉDICO */}
-                                            <td style={{ padding: '16px 24px', color: '#4B5563', fontWeight: 500 }}>
+                                            <td className="medico-cell">
                                                 {atencion.medico?.user?.name || 'Médico sin nombre'}
                                             </td>
-                                            {/* ✅ ESPECIALIDAD */}
-                                            <td style={{ padding: '16px 24px', color: '#4B5563' }}>
+                                            <td>
                                                 {atencion.medico?.especialidad?.nombre || 'General'}
                                             </td>
-                                            <td style={{ padding: '16px 24px' }}>
+                                            <td>
                                                 <span className="dni-tag">{atencion.tipo_atencion}</span>
                                             </td>
-                                            <td style={{ padding: '16px 24px' }}>
+                                            <td>
                                                 <span
                                                     className="status-pill"
-                                                    style={{
-                                                        backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
-                                                        fontSize: '0.7rem'
-                                                    }}
+                                                    style={{ backgroundColor: obtenerColorEstado(atencion.estado, 'bg') }}
                                                 >
                                                     {atencion.estado}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                                                <button
-                                                    onClick={() => handleAbrirModal(atencion)}
-                                                    style={{
-                                                        border: 'none',
-                                                        background: 'transparent',
-                                                        color: '#2563EB',
-                                                        cursor: 'pointer',
-                                                        transition: 'color 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => e.target.style.color = '#1D4ED8'}
-                                                    onMouseOut={(e) => e.target.style.color = '#2563EB'}
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
+                                            <td style={{ textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                    <button
+                                                        className="btn-icon-action"
+                                                        title="Ver Detalle"
+                                                        onClick={() => handleAbrirModal(atencion)}
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    {/* BOTÓN EDITAR AGREGADO */}
+                                                    <button
+                                                        className="btn-icon-action"
+                                                        title="Editar Atención"
+                                                        style={{ color: '#2563EB' }}
+                                                        onClick={() => handleAbrirModal(atencion)} // handleAbrirModal ya maneja el objeto
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

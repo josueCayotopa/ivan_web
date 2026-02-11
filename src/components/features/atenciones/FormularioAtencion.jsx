@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, User, Calendar, Clock, Stethoscope, Briefcase, Filter, Save } from 'lucide-react'; 
+import { X, Search, User, Calendar, Clock, Stethoscope, Briefcase, Filter, Save } from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../../services/atencionService';
 import pacienteService from '../../../services/pacienteService';
@@ -121,27 +121,60 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         finally { setBuscandoPaciente(false); }
     };
 
+    // FormularioAtencion.jsx - Dentro de handleSubmit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!pacienteSeleccionado) {
-            Swal.fire('Atención', 'Debe seleccionar un paciente', 'warning');
-            return;
-        }
         setLoading(true);
+
         try {
-            const response = esEdicion
-                ? await atencionService.updateAtencion(atencion.id, formData)
-                : await atencionService.createAtencion(formData);
+            // Preparar el payload con los datos del formulario
+            const payload = { ...formData };
 
-            if (response.success || response.data) {
-                Swal.fire({ icon: 'success', title: 'Atención guardada', timer: 1500, showConfirmButton: false });
-                onSuccess();
+            // Regla de negocio: si es hombre, limpiar campo de último embarazo
+            if (payload.genero === 'M') {
+                payload.ultimo_embarazo = null;
             }
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo guardar la atención', 'error');
-        } finally { setLoading(false); }
-    };
 
+            let response;
+            if (isEditing) {
+                // ✅ PARA EDITAR: Enviamos un solo objeto que incluya el ID
+                // Esto coincide con tu pacienteService.js que hace JSON.stringify(pacienteData)
+                response = await pacienteService.updatePaciente({
+                    id: paciente.id,
+                    ...payload
+                });
+            } else {
+                // PARA CREAR: Enviamos los datos normalmente
+                response = await pacienteService.createPaciente(payload);
+            }
+
+            // Verificamos si la respuesta fue exitosa (tu backend devuelve success: true)
+            if (response.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: `Paciente ${isEditing ? 'actualizado' : 'registrado'} correctamente`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                if (onSuccess) onSuccess(response.data);
+                onClose();
+            } else {
+                throw new Error(response.message || 'Error al guardar');
+            }
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo guardar el paciente'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="modal-overlay">
             <div className="modal-content" style={{ maxWidth: '800px' }}>

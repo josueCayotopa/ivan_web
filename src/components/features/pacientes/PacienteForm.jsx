@@ -80,25 +80,32 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
     useEffect(() => {
         if (paciente) {
             setFormData({
-                id: paciente.id,
+                // Identificación (Ya funciona)
                 tipo_documento: paciente.tipo_documento || 'DNI',
                 documento_identidad: paciente.documento_identidad || '',
                 nombres: paciente.nombres || '',
                 apellido_paterno: paciente.apellido_paterno || '',
                 apellido_materno: paciente.apellido_materno || '',
-                fecha_nacimiento: paciente.fecha_nacimiento || '',
+                fecha_nacimiento: paciente.fecha_nacimiento
+                    ? paciente.fecha_nacimiento.substring(0, 10)
+                    : '',
+
+                // ✅ SECCIÓN SOCIAL Y CONTACTO (CORREGIDA)
                 genero: paciente.genero || 'M',
-                telefono: paciente.celular || paciente.telefono || '',
-                email: paciente.email || '',
-                direccion: paciente.direccion || '',
+                estado_civil: paciente.estado_civil || '',
                 ocupacion: paciente.ocupacion || '',
 
-                // ✅ CARGAR NUEVOS CAMPOS
-                estado_civil: paciente.estado_civil || '',
+                // Asegúrate de usar 'cantidad_hijos' como en tu modelo Pacientes.php
                 cantidad_hijos: paciente.cantidad_hijos || 0,
                 ultimo_embarazo: paciente.ultimo_embarazo || '',
 
+                // Tu tabla usa 'telefono' y 'celular', mapeamos al campo del form
+                telefono: paciente.telefono || paciente.celular || '',
+
+                email: paciente.email || '',
+                direccion: paciente.direccion || '',
                 alergias: paciente.alergias || ''
+
             });
         }
     }, [paciente]);
@@ -111,44 +118,24 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
-            // Preparar payload
-            const payload = { ...formData };
-
-            // Limpieza: Si es hombre, ultimo_embarazo se envía vacío o null
-            if (payload.genero === 'M') {
-                payload.ultimo_embarazo = null;
-            }
-
             let response;
             if (isEditing) {
-                response = await pacienteService.updatePaciente(paciente.id, payload);
-            } else {
-                response = await pacienteService.createPaciente(payload);
-            }
-
-            if (response.success || response.id) { // Ajusta según tu respuesta del backend
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: `Paciente ${isEditing ? 'actualizado' : 'registrado'} correctamente`,
-                    timer: 1500,
-                    showConfirmButton: false
+                // Enviamos el ID junto con los datos actualizados
+                response = await pacienteService.updatePaciente({
+                    id: paciente.id,
+                    ...formData
                 });
-                if (onSuccess) onSuccess(response.data || response); // Devuelve el paciente creado
-                onClose();
             } else {
-                throw new Error(response.message || 'Error al guardar');
+                response = await pacienteService.createPaciente(formData);
             }
 
+            if (response.success) {
+                Swal.fire('Éxito', isEditing ? 'Paciente actualizado' : 'Paciente creado', 'success');
+                onSuccess(); // Esto refresca la lista en el componente padre
+            }
         } catch (error) {
-            console.error(error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.response?.data?.message || 'No se pudo guardar el paciente'
-            });
+            Swal.fire('Error', 'No se pudo procesar la solicitud', 'error');
         } finally {
             setLoading(false);
         }

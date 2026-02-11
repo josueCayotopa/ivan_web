@@ -22,48 +22,44 @@ const Consultas = () => {
         search: ''
     });
 
+    // Dentro de Consultas.jsx
     useEffect(() => {
-        cargarPacientesDelDia();
-    }, [filtros.fecha]);
+        const delayDebounceFn = setTimeout(() => {
+            cargarPacientesDelDia();
+        }, 500); // Espera 500ms después de que el usuario deja de escribir
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [filtros.fecha, filtros.search]); // Escucha ambos cambios
 
     const cargarPacientesDelDia = async () => {
         setLoading(true);
         try {
-            console.log('🔄 Cargando pacientes para fecha:', filtros.fecha);
+            let response;
 
-            // ✅ CORRECCIÓN: Usar el endpoint correcto con eager loading
-            const response = await atencionService.getAtencionesPorFecha(filtros.fecha);
-
-            console.log('✅ Respuesta del servicio:', response);
-            console.log('✅ Datos recibidos:', response.data);
+            // ✅ LÓGICA DE BÚSQUEDA GLOBAL
+            if (filtros.search.trim() !== '') {
+                console.log('🔍 Buscando paciente globalmente:', filtros.search);
+                // Usamos el método de búsqueda que ya tienes en el service
+                response = await atencionService.searchAtenciones(filtros.search);
+            } else {
+                console.log('📅 Cargando pacientes por fecha:', filtros.fecha);
+                response = await atencionService.getAtencionesPorFecha(filtros.fecha);
+            }
 
             if (response.success) {
-                // ✅ Filtrar por estado en el frontend
-                let atencionesFiltradas = response.data || [];
+                let datos = response.data || [];
 
-                // Filtrar solo las que están programadas, en espera o en atención
-                atencionesFiltradas = atencionesFiltradas.filter(atencion =>
+                // Filtrar estados relevantes para el consultorio
+                const atencionesFiltradas = datos.filter(atencion =>
                     ['Programada', 'En Espera', 'En Atención'].includes(atencion.estado)
                 );
 
-                // Filtrar por búsqueda si hay texto
-                if (filtros.search) {
-                    const searchLower = filtros.search.toLowerCase();
-                    atencionesFiltradas = atencionesFiltradas.filter(atencion => {
-                        const nombreCompleto = `${atencion.paciente?.nombres || ''} ${atencion.paciente?.apellido_paterno || ''}`.toLowerCase();
-                        const dni = atencion.paciente?.documento_identidad || '';
-                        return nombreCompleto.includes(searchLower) || dni.includes(searchLower);
-                    });
-                }
-
-                console.log('✅ Atenciones filtradas:', atencionesFiltradas.length);
                 setAtenciones(atencionesFiltradas);
             } else {
-                console.error('❌ Error en respuesta:', response);
                 setAtenciones([]);
             }
         } catch (error) {
-            console.error('❌ Error cargando pacientes:', error);
+            console.error('❌ Error en la carga:', error);
             setAtenciones([]);
         } finally {
             setLoading(false);
@@ -179,6 +175,18 @@ const Consultas = () => {
 
                                 {/* Columna 1: Hora y Estado */}
                                 <div style={{ minWidth: '100px' }}>
+                                    <div style={{
+                                        fontSize: '0.75rem',
+                                        color: '#3B82F6',
+                                        fontWeight: '700',
+                                        marginBottom: '5px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                    }}>
+                                        <Calendar size={12} />
+                                        {atencion.fecha_atencion}
+                                    </div>
                                     <div className="time-badge">
                                         <Clock size={16} />
                                         {atencion.hora_ingreso?.substring(0, 5) || 'N/A'}

@@ -202,7 +202,17 @@ const ConsultaExterna = ({ atencion, onClose }) => {
             presion_arterial_diastolica: esPreCarga ? '' : diastolica,
             frecuencia_cardiaca: esPreCarga ? '' : (data.frecuencia_cardiaca || ''),
 
-            referencia_otro: data.referencia_otro || atencion.medio_captacion || ''
+            referencia_otro: data.referencia_otro || atencion.medio_captacion || '',
+
+
+
+            //  plan y tratamiento 
+            procedimiento_propuesto: data.procedimiento_propuesto || '',
+            tecnica_utilizar: data.tecnica_utilizar || '',
+            productos_usar: data.productos_usar || '',
+            numero_sesiones: data.numero_sesiones || 1,
+            precio_estimado: data.precio_estimado || '', // <--- Mapear monto
+            proxima_cita: data.proxima_cita || '',
         }));
     };
     const inicializarFormularioNuevo = () => {
@@ -702,67 +712,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                 </div>
                             </div>
 
-                            {/* RECOMENDADO POR (Marketing) */}
-                            <div className="form-section fade-in-right">
-                                <h3 className="section-title">¿Cómo nos conoció?</h3>
 
-                                <div className="checkbox-grid-3">
-                                    <label className="checkbox-card">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.instagram_dr_ivan_pareja}
-                                            onChange={() => handleCheckboxChange('instagram_dr_ivan_pareja')}
-                                        />
-                                        <span>Instagram Dr Ivan Pareja</span>
-                                    </label>
-
-                                    <label className="checkbox-card">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.facebook_dr_ivan_pareja}
-                                            onChange={() => handleCheckboxChange('facebook_dr_ivan_pareja')}
-                                        />
-                                        <span>Facebook Dr Ivan Pareja</span>
-                                    </label>
-
-                                    <label className="checkbox-card">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.radio}
-                                            onChange={() => handleCheckboxChange('radio')}
-                                        />
-                                        <span>Radio</span>
-                                    </label>
-
-                                    <label className="checkbox-card">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.tv}
-                                            onChange={() => handleCheckboxChange('tv')}
-                                        />
-                                        <span>TV</span>
-                                    </label>
-
-                                    <label className="checkbox-card">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.internet}
-                                            onChange={() => handleCheckboxChange('internet')}
-                                        />
-                                        <span>Internet</span>
-                                    </label>
-                                </div>
-
-                                <div className="form-group" style={{ marginTop: '16px' }}>
-                                    <label>Referencia (Otro):</label>
-                                    <input
-                                        type="text"
-                                        value={formData.referencia_otro}
-                                        onChange={(e) => handleChange('referencia_otro', e.target.value)}
-                                        placeholder="Especifique otra referencia..."
-                                    />
-                                </div>
-                            </div>
                         </>
                     )}
                     {activeTab === 'motivos' && (

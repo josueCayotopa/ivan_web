@@ -53,7 +53,10 @@ const Pacientes = () => {
             setLoading(false);
         }
     };
-
+    const handleEditarPaciente = (paciente) => {
+        setSelectedPaciente(paciente); // Esto activa el "modo edición"
+        setShowModal(true);
+    };
     const handleSearch = () => {
         // Al buscar, reiniciamos a la página 1 y cargamos
         if (pagina !== 1) {
@@ -234,9 +237,9 @@ const Pacientes = () => {
                                     </td>
                                     <td>
                                         <div className="patient-name-cell">
-                                           
-                                                {`${paciente.nombres || ''} ${paciente.apellido_paterno || ''} ${paciente.apellido_materno || ''}`.trim() || 'Sin Nombre'}
-                                           
+
+                                            {`${paciente.nombres || ''} ${paciente.apellido_paterno || ''} ${paciente.apellido_materno || ''}`.trim() || 'Sin Nombre'}
+
                                         </div>
                                     </td>
                                     <td>
@@ -301,6 +304,14 @@ const Pacientes = () => {
                                         >
                                             <Eye size={16} />
                                         </button>
+
+                                        <button
+                                            className="btn-icon"
+                                            onClick={() => handleEditarPaciente(paciente)} // Antes no hacía nada o llamaba a ver detalle
+                                            title="Editar"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -329,7 +340,7 @@ const Pacientes = () => {
             {/* MODAL DE FORMULARIO */}
             {showModal && (
                 <PacienteForm
-                    dniInicial=""
+                    paciente={selectedPaciente} // ¡CRÍTICO! Debes pasar el paciente seleccionado
                     onClose={handleCloseModal}
                     onSuccess={handleSuccess}
                 />

@@ -37,20 +37,20 @@ const pacienteService = {
 
   async buscarDniExterno(dni) {
     try {
-        // Ahora llamamos a NUESTRO backend (Laravel)
-        const response = await fetch(`${API_URL}/pacientes/consulta-dni-externo`, {
-            method: 'POST',
-            headers: getAuthHeaders(), // Usa el token de tu app para seguridad
-            body: JSON.stringify({ documento: dni })
-        });
-        
-        const result = await response.json();
-        return result; // Devuelve { success: true, data: {...} }
+      // Ahora llamamos a NUESTRO backend (Laravel)
+      const response = await fetch(`${API_URL}/pacientes/consulta-dni-externo`, {
+        method: 'POST',
+        headers: getAuthHeaders(), // Usa el token de tu app para seguridad
+        body: JSON.stringify({ documento: dni })
+      });
+
+      const result = await response.json();
+      return result; // Devuelve { success: true, data: {...} }
     } catch (error) {
-        console.error('Error llamando al proxy de DNI:', error);
-        return { success: false, error: error.message };
+      console.error('Error llamando al proxy de DNI:', error);
+      return { success: false, error: error.message };
     }
-},
+  },
   // POST /api/v1/pacientes/por-documento - Buscar por DNI (Para el Formulario)
   async searchByDocument(documento) {
     try {
@@ -99,20 +99,14 @@ const pacienteService = {
   async updatePaciente(pacienteData) {
     try {
       const response = await fetch(`${API_URL}/pacientes/update`, {
-        method: 'POST',
+        method: 'POST', // Tu api.php dice POST
         headers: getAuthHeaders(),
-        body: JSON.stringify(pacienteData)
+        body: JSON.stringify(pacienteData) // Aquí viaja el { id: 123, nombres: '...' }
       });
-
-      const data = await response.json();
-
-      return {
-        success: data.success || response.ok,
-        message: data.message,
-        data: data.data
-      };
+      const result = await response.json();
+      return result;
     } catch (error) {
-      console.error('Error actualizando paciente:', error);
+      console.error('Error:', error);
       throw error;
     }
   },
