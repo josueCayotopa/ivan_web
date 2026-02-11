@@ -192,7 +192,6 @@ const ConsultaExterna = ({ atencion, onClose }) => {
             motivo_capilar: data.motivo_capilar || '',
             expectativa_paciente: data.expectativa_paciente || '',
             motivos_zonas: data.motivos_zonas || '',
-            procedimiento_propuesto: data.procedimiento_propuesto || '',
 
             // Vitales
             peso: data.peso || '',
