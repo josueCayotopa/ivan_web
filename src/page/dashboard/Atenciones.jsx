@@ -1,91 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Calendar, Clock, User, Stethoscope, FileText, Plus, 
-    Search, Filter, LayoutGrid, List, Eye, Award 
+import {
+    Calendar, Clock, User, Stethoscope, FileText, Plus,
+    Search, Filter, LayoutGrid, List, Eye, Award
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import atencionService from '../../services/atencionService.js';
 import FormularioAtencion from '../../components/features/atenciones/FormularioAtencion';
 import './Atenciones.css';
 import { getFechaLocal } from '../../utils/dateUtils';
-
+const TIPOS_ATENCION = [
+    'Consulta',
+    'Procedimiento Menor',
+    'Cirugía',
+    'Control',
+    'Emergencia',
+    'Examen'
+];
 const Atenciones = () => {
     const [atenciones, setAtenciones] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedAtencion, setSelectedAtencion] = useState(null);
-    
+
     const [viewMode, setViewMode] = useState('table');
 
     const [filtros, setFiltros] = useState({
-       fecha: getFechaLocal(),
+        fecha: getFechaLocal(),
         paciente_search: '',
         medico_id: '',
         estado: ''
     });
-
+    // Actualiza las dependencias del useEffect
     useEffect(() => {
-        cargarAtenciones();
-    }, [filtros.fecha]);
+        // Agregamos un pequeño retraso (debounce) para no saturar la API al escribir
+        const timer = setTimeout(() => {
+            cargarAtenciones();
+        }, 500);
 
+        return () => clearTimeout(timer);
+    }, [filtros.fecha, filtros.paciente_search, filtros.estado, filtros.medico_id]);
     const cargarAtenciones = async () => {
         setLoading(true);
         try {
-            // ✅ CAMBIO CRÍTICO: Usar getAtencionesPorFecha en lugar de getAtenciones
-            const response = await atencionService.getAtencionesPorFecha(filtros.fecha);
+            let response;
 
-            console.log('✅ Respuesta del servicio por-fecha:', response);
-            
-            if (response.success) {
-                console.log('✅ Atenciones recibidas:', response.data);
-                
-                if (response.data.length > 0) {
-                    console.log('✅ Primera atención completa:', response.data[0]);
-                    console.log('✅ Médico:', response.data[0]?.medico);
-                    console.log('✅ Nombre médico:', response.data[0]?.medico?.user?.name);
-                    console.log('✅ Especialidad:', response.data[0]?.medico?.especialidad?.nombre);
-                }
-
-                // Aplicar filtros adicionales en el frontend si es necesario
-                let atencionesFiltradas = response.data || [];
-
-                // Filtro por búsqueda de paciente
-                if (filtros.paciente_search) {
-                    const searchLower = filtros.paciente_search.toLowerCase();
-                    atencionesFiltradas = atencionesFiltradas.filter(atencion => {
-                        const nombreCompleto = `${atencion.paciente?.nombres || ''} ${atencion.paciente?.apellido_paterno || ''}`.toLowerCase();
-                        const dni = atencion.paciente?.documento_identidad || '';
-                        return nombreCompleto.includes(searchLower) || dni.includes(searchLower);
-                    });
-                }
-
-                // Filtro por estado
-                if (filtros.estado) {
-                    atencionesFiltradas = atencionesFiltradas.filter(atencion => 
-                        atencion.estado === filtros.estado
-                    );
-                }
-
-                // Filtro por médico
-                if (filtros.medico_id) {
-                    atencionesFiltradas = atencionesFiltradas.filter(atencion => 
-                        atencion.medico_id === parseInt(filtros.medico_id)
-                    );
-                }
-
-                setAtenciones(atencionesFiltradas);
+            // Si hay un término de búsqueda largo, usamos búsqueda global
+            if (filtros.paciente_search && filtros.paciente_search.length > 2) {
+                response = await atencionService.searchAtenciones(filtros.paciente_search);
             } else {
-                setAtenciones([]);
+                // De lo contrario, carga normal por fecha
+                response = await atencionService.getAtencionesPorFecha(filtros.fecha);
+            }
+
+            if (response.success) {
+                // El buscador del backend ya filtra por nombre/DNI, 
+                // solo aplicamos filtros de estado o médico si están seleccionados
+                let datos = response.data || [];
+
+                if (filtros.estado) {
+                    datos = datos.filter(a => a.estado === filtros.estado);
+                }
+                if (filtros.medico_id) {
+                    datos = datos.filter(a => a.medico_id === parseInt(filtros.medico_id));
+                }
+
+                setAtenciones(datos);
             }
         } catch (error) {
-            console.error('❌ Error cargando atenciones:', error);
+            console.error('Error en búsqueda:', error);
             setAtenciones([]);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudieron cargar las atenciones',
-                timer: 2000
-            });
         } finally {
             setLoading(false);
         }
@@ -108,7 +91,7 @@ const Atenciones = () => {
 
     const obtenerColorEstado = (estado, tipo = 'bg') => {
         const esCancelado = estado === 'Cancelada' || estado === 'No Asistió';
-        
+
         if (esCancelado) return tipo === 'bg' ? '#FEE2E2' : '#DC2626';
 
         const colores = {
@@ -122,7 +105,7 @@ const Atenciones = () => {
 
     return (
         <div className="appointments-container fade-in">
-            
+
             {/* HEADER */}
             <div className="page-header">
                 <div>
@@ -131,24 +114,24 @@ const Atenciones = () => {
                         Gestión de citas para el {new Date(filtros.fecha + 'T00:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '4px', display: 'flex' }}>
-                        <button 
+                        <button
                             onClick={() => setViewMode('table')}
-                            style={{ 
-                                padding: '8px', border: 'none', background: viewMode === 'table' ? '#F3F4F6' : 'transparent', 
-                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'table' ? '#FFC107' : '#9CA3AF' 
+                            style={{
+                                padding: '8px', border: 'none', background: viewMode === 'table' ? '#F3F4F6' : 'transparent',
+                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'table' ? '#FFC107' : '#9CA3AF'
                             }}
                             title="Vista Tabla"
                         >
                             <List size={20} />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setViewMode('cards')}
-                            style={{ 
-                                padding: '8px', border: 'none', background: viewMode === 'cards' ? '#F3F4F6' : 'transparent', 
-                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'cards' ? '#FFC107' : '#9CA3AF' 
+                            style={{
+                                padding: '8px', border: 'none', background: viewMode === 'cards' ? '#F3F4F6' : 'transparent',
+                                borderRadius: '6px', cursor: 'pointer', color: viewMode === 'cards' ? '#FFC107' : '#9CA3AF'
                             }}
                             title="Vista Tarjetas"
                         >
@@ -224,15 +207,15 @@ const Atenciones = () => {
                         <div className="cards-grid fade-in-up">
                             {atenciones.map((atencion) => (
                                 <div key={atencion.id} className="appointment-card">
-                                    <div 
-                                        className="card-left-strip" 
+                                    <div
+                                        className="card-left-strip"
                                         style={{ backgroundColor: obtenerColorEstado(atencion.estado, 'border') }}
                                     />
-                                    
+
                                     <div className="card-content">
                                         <div className="time-badge">
                                             <Clock size={14} />
-                                            {atencion.hora_ingreso ? atencion.hora_ingreso.substring(0,5) : '--:--'}
+                                            {atencion.hora_ingreso ? atencion.hora_ingreso.substring(0, 5) : '--:--'}
                                         </div>
 
                                         <div className="patient-info">
@@ -267,16 +250,16 @@ const Atenciones = () => {
                                     </div>
 
                                     <div className="card-actions">
-                                        <div 
+                                        <div
                                             className="status-pill"
-                                            style={{ 
+                                            style={{
                                                 backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
                                                 color: '#1F2937'
                                             }}
                                         >
                                             {atencion.estado}
                                         </div>
-                                        
+
                                         <button className="btn-action" onClick={() => handleAbrirModal(atencion)}>
                                             Ver Detalle
                                         </button>
@@ -288,8 +271,8 @@ const Atenciones = () => {
 
                     {/* VISTA: TABLA */}
                     {viewMode === 'table' && (
-                        <div className="filters-card fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="table-responsive-container fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
+                            <table className="patients-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
                                     <tr>
                                         <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '0.85rem', color: '#6B7280', fontWeight: 600 }}>Hora</th>
@@ -305,7 +288,7 @@ const Atenciones = () => {
                                     {atenciones.map((atencion) => (
                                         <tr key={atencion.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
                                             <td style={{ padding: '16px 24px', color: '#374151', fontWeight: 500 }}>
-                                                {atencion.hora_ingreso?.substring(0,5)}
+                                                {atencion.hora_ingreso?.substring(0, 5)}
                                             </td>
                                             <td style={{ padding: '16px 24px' }}>
                                                 <div style={{ fontWeight: 600, color: '#111827' }}>
@@ -327,9 +310,9 @@ const Atenciones = () => {
                                                 <span className="dni-tag">{atencion.tipo_atencion}</span>
                                             </td>
                                             <td style={{ padding: '16px 24px' }}>
-                                                <span 
+                                                <span
                                                     className="status-pill"
-                                                    style={{ 
+                                                    style={{
                                                         backgroundColor: obtenerColorEstado(atencion.estado, 'bg'),
                                                         fontSize: '0.7rem'
                                                     }}
@@ -338,12 +321,12 @@ const Atenciones = () => {
                                                 </span>
                                             </td>
                                             <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                                                <button 
+                                                <button
                                                     onClick={() => handleAbrirModal(atencion)}
-                                                    style={{ 
-                                                        border: 'none', 
-                                                        background: 'transparent', 
-                                                        color: '#2563EB', 
+                                                    style={{
+                                                        border: 'none',
+                                                        background: 'transparent',
+                                                        color: '#2563EB',
                                                         cursor: 'pointer',
                                                         transition: 'color 0.2s'
                                                     }}
@@ -364,7 +347,7 @@ const Atenciones = () => {
                 <div className="empty-state">
                     <Calendar size={48} style={{ color: '#9CA3AF', margin: '0 auto 16px' }} />
                     <p>No hay atenciones programadas para esta fecha</p>
-                    <button className="btn-create" onClick={() => handleAbrirModal()} style={{margin: '0 auto'}}>
+                    <button className="btn-create" onClick={() => handleAbrirModal()} style={{ margin: '0 auto' }}>
                         <Plus size={18} /> Registrar Atención
                     </button>
                 </div>

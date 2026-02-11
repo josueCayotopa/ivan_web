@@ -11,29 +11,46 @@ const getAuthHeaders = () => {
 };
 
 const pacienteService = {
- async getPacientes(page = 1, search = '') {
-  try {
-    const response = await fetch(`${API_URL}/pacientes`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ page, search })
-    });
+  async getPacientes(page = 1, search = '') {
+    try {
+      const response = await fetch(`${API_URL}/pacientes`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ page, search })
+      });
 
-    const result = await response.json(); // 'result' es el objeto completo con "success" y "data"
+      const result = await response.json(); // 'result' es el objeto completo con "success" y "data"
 
-    return {
-      success: result.success,
-      // Accedemos a result.data (paginación) y luego a .data (array de pacientes)
-      data: result.data?.data || [], 
-      total: result.data?.total || 0,
-      last_page: result.data?.last_page || 1
-    };
-  } catch (error) {
-    console.error('Error obteniendo pacientes:', error);
-    throw error;
-  }
+      return {
+        success: result.success,
+        // Accedemos a result.data (paginación) y luego a .data (array de pacientes)
+        data: result.data?.data || [],
+        total: result.data?.total || 0,
+        last_page: result.data?.last_page || 1
+      };
+    } catch (error) {
+      console.error('Error obteniendo pacientes:', error);
+      throw error;
+    }
+  },
+  // src/services/pacienteService.js
+
+  async buscarDniExterno(dni) {
+    try {
+        // Ahora llamamos a NUESTRO backend (Laravel)
+        const response = await fetch(`${API_URL}/pacientes/consulta-dni-externo`, {
+            method: 'POST',
+            headers: getAuthHeaders(), // Usa el token de tu app para seguridad
+            body: JSON.stringify({ documento: dni })
+        });
+        
+        const result = await response.json();
+        return result; // Devuelve { success: true, data: {...} }
+    } catch (error) {
+        console.error('Error llamando al proxy de DNI:', error);
+        return { success: false, error: error.message };
+    }
 },
-
   // POST /api/v1/pacientes/por-documento - Buscar por DNI (Para el Formulario)
   async searchByDocument(documento) {
     try {
@@ -99,7 +116,7 @@ const pacienteService = {
       throw error;
     }
   },
- 
+
 
   // POST /api/v1/pacientes/destroy - Eliminar (Soft Delete)
   async deletePaciente(id) {

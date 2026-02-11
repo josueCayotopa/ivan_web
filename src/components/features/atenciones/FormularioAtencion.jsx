@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, User, Calendar, Clock, Stethoscope, Briefcase } from 'lucide-react';
+import { X, Search, User, Calendar, Clock, Stethoscope, Briefcase, Filter, Save } from 'lucide-react'; 
 import Swal from 'sweetalert2';
 import atencionService from '../../../services/atencionService';
 import pacienteService from '../../../services/pacienteService';
@@ -13,7 +13,21 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
     // Estados para selects
     const [especialidades, setEspecialidades] = useState([]);
     const [medicoUnico, setMedicoUnico] = useState(null);
-
+    const TIPOS_ATENCION = [
+        { id: 'Consulta Externa', nombre: 'Consulta Externa' },
+        { id: 'Emergencia', nombre: 'Emergencia' },
+        { id: 'Hospitalización', nombre: 'Hospitalización' },
+        { id: 'Cirugía', nombre: 'Cirugía' },
+        { id: 'Procedimiento', nombre: 'Procedimiento' },
+        { id: 'Control', nombre: 'Control' }
+    ];
+    const CATEGORIAS_ATENCION = [
+        'Consulta',
+        'Procedimiento Menor',
+        'Cirugía',
+        'Control',
+        'Emergencia'
+    ];
     // Estados paciente
     const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
     const [buscandoPaciente, setBuscandoPaciente] = useState(false);
@@ -26,11 +40,12 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         medico_id: '',
         fecha_atencion: new Date().toISOString().split('T')[0],
         hora_ingreso: '09:00', // Hora por defecto para simplificar
-        tipo_atencion: 'Consulta Externa',
+
         tipo_cobertura: 'Particular',
         motivo_consulta: '',
         observaciones: '',
         medio_captacion: '',
+        tipo_atencion: '',
         estado: 'Programada'
     });
 
@@ -214,27 +229,60 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 </select>
                             </div>
                         </div>
+                        {/* CATEGORÍA DE ATENCIÓN */}
+                        <div className="form-group">
+                            <label>Tipo de Atención *</label>
+                            <div className="input-with-icon">
+                                <Filter size={18} color="#6B7280" />
+                                <select
+                                    name="tipo_atencion"
+                                    value={formData.tipo_atencion}
+                                    onChange={handleChange}
+                                    required
+                                    className="form-control"
+                                >
+                                    <option value="">Seleccione tipo...</option>
+                                    {/* Cambia CATEGORIAS_ATENCION por TIPOS_ATENCION */}
+                                    {TIPOS_ATENCION.map(tipo => (
+                                        <option key={tipo.id} value={tipo.id}>
+                                            {tipo.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
 
+                        {/* MOTIVO DETALLADO (Tu código actual mejorado) */}
                         <div className="form-group" style={{ marginTop: '15px' }}>
-                            <label>Motivo de Consulta / Observaciones</label>
+                            <label>Motivo de Consulta / Observaciones Específicas</label>
                             <textarea
                                 name="motivo_consulta"
                                 value={formData.motivo_consulta}
                                 onChange={handleChange}
                                 rows="3"
                                 className="form-control"
-                                placeholder="Ej: Rinoplastia, control post-operatorio..."
-                                style={{ width: '100%', padding: '10px' }}
+                                placeholder="Ej: Rinoplastia estética, retiro de puntos, evaluación de cicatriz..."
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E5E7EB' }}
                             />
                         </div>
-                    </div>
 
-                    <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
-                        <button type="submit" className="btn-save" disabled={loading} style={{ background: '#F59E0B', color: 'white', padding: '10px 25px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
-                            {loading ? 'Guardando...' : esEdicion ? 'Actualizar Atención' : 'Confirmar Atención'}
+
+                    </div>
+                    {/* BOTONES DE ACCIÓN */}
+                    <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #E2E8F0', paddingTop: '15px' }}>
+                        <button type="button" className="btn-cancel" onClick={onClose} style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #E2E8F0', background: 'white', cursor: 'pointer' }}>
+                            Cancelar
+                        </button>
+                        <button type="submit" className="btn-save" disabled={loading} style={{ padding: '10px 20px', borderRadius: '6px', border: 'none', background: '#2563EB', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {loading ? (
+                                <> <div className="spinner-small"></div> Guardando... </>
+                            ) : (
+                                <> <Save size={18} /> {esEdicion ? 'Actualizar Atención' : 'Confirmar Atención'} </>
+                            )}
                         </button>
                     </div>
+
+
                 </form>
 
                 {showPacienteModal && (

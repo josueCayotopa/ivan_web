@@ -70,19 +70,21 @@ const atencionService = {
         return await axios.post('/atenciones/stats', filters);
     },
 
-    // POST Buscar atenciones
+    // En atencionService.js, cambia la línea 66 por:
     async searchAtenciones(searchTerm) {
-        return await axios.post('/atenciones/search', { search: searchTerm });
-    },  
+        // Cambiamos 'search' por 'q' para que coincida con AtencionController::search
+        return await axios.post('/atenciones/search', { q: searchTerm });
+    },
+
     async getStats() {
-    try {
-      // Ajusta según uses axios o fetch en este archivo
-      const response = await axios.post('/atenciones/stats'); 
-      return response.data;
-    } catch (error) {
-      return { success: false, data: { hoy: 0, pendientes: 0, atendidas: 0 } };
-    }
-  },
+        try {
+            // Ajusta según uses axios o fetch en este archivo
+            const response = await axios.post('/atenciones/stats');
+            return response.data;
+        } catch (error) {
+            return { success: false, data: { hoy: 0, pendientes: 0, atendidas: 0 } };
+        }
+    },
 };
 
 export default atencionService;

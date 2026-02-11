@@ -324,3 +324,45 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        /* Flota sobre el contenido */
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        width: 280px !important;
+        transform: translateX(-100%);
+        /* Oculto por defecto */
+        z-index: 1000;
+        /* Siempre encima */
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar-open .sidebar {
+        transform: translateX(0);
+        /* Desliza hacia adentro */
+    }
+
+    /* Ajuste del Header para móviles */
+    .dashboard-header {
+        padding: 0 15px;
+        /* Menos espacio lateral */
+        height: 60px;
+    }
+
+    .header-title {
+        font-size: 0.9rem;
+        /* Texto más pequeño para evitar desbordes */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-name {
+        display: none;
+        /* Ocultamos el nombre para ganar espacio, solo queda el avatar */
+    }
+}

@@ -672,3 +672,39 @@
         grid-template-columns: 1fr;
     }
 }
+/* Contenedor de la tabla para permitir scroll horizontal */
+.table-responsive-container {
+    width: 100%;
+    overflow-x: auto; /* Permite deslizar a los lados */
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #F3F4F6;
+    -webkit-overflow-scrolling: touch; /* Suavidad en iOS */
+}
+
+/* Forzar un ancho mínimo para que las columnas no se amontonen */
+.table-responsive-container table {
+    min-width: 900px; /* Ajusta según cuántas columnas tengas */
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Opcional: Estilizar la barra de scroll para que no se vea tosca */
+.table-responsive-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive-container::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 10px;
+}
+
+/* Ajustes para celdas en móvil */
+@media (max-width: 768px) {
+    .table-responsive-container td, 
+    .table-responsive-container th {
+        padding: 12px 15px !important; /* Espaciado más compacto */
+        white-space: nowrap; /* Evita que el texto salte de línea y rompa la fila */
+    }
+}

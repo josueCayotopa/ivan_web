@@ -18,7 +18,7 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
         apellido_materno: '',
         fecha_nacimiento: '',
         genero: 'M',
-        
+
         // Contacto
         telefono: '',
         email: '',
@@ -33,6 +33,48 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
         // Antecedentes rápidos (Opcional si los manejas aquí)
         alergias: '',
     });
+    // Dentro de PacienteForm.jsx
+
+    const [buscandoExterno, setBuscandoExterno] = useState(false);
+
+    // Dentro de PacienteForm.jsx
+
+    const handleConsultarDniApi = async () => {
+        const dni = formData.documento_identidad;
+        if (dni.length !== 8) {
+            Swal.fire('Atención', 'Ingrese un DNI válido de 8 dígitos', 'warning');
+            return;
+        }
+
+        setBuscandoExterno(true);
+        try {
+            const resultado = await pacienteService.buscarDniExterno(dni);
+
+            if (resultado.success && resultado.data) {
+                // Mapeo exacto según la documentación de la API
+                setFormData(prev => ({
+                    ...prev,
+                    nombres: resultado.data.first_name || '',           // Nombres
+                    apellido_paterno: resultado.data.first_last_name || '', // Apellido Paterno
+                    apellido_materno: resultado.data.second_last_name || '', // Apellido Materno
+                }));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos recuperados',
+                    text: `Paciente: ${resultado.data.first_name}`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('Error', 'No se encontraron datos para este DNI', 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Hubo un problema con la conexión', 'error');
+        } finally {
+            setBuscandoExterno(false);
+        }
+    };
 
     // Cargar datos si es edición
     useEffect(() => {
@@ -50,12 +92,12 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                 email: paciente.email || '',
                 direccion: paciente.direccion || '',
                 ocupacion: paciente.ocupacion || '',
-                
+
                 // ✅ CARGAR NUEVOS CAMPOS
                 estado_civil: paciente.estado_civil || '',
                 cantidad_hijos: paciente.cantidad_hijos || 0,
                 ultimo_embarazo: paciente.ultimo_embarazo || '',
-                
+
                 alergias: paciente.alergias || ''
             });
         }
@@ -73,7 +115,7 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
         try {
             // Preparar payload
             const payload = { ...formData };
-            
+
             // Limpieza: Si es hombre, ultimo_embarazo se envía vacío o null
             if (payload.genero === 'M') {
                 payload.ultimo_embarazo = null;
@@ -121,10 +163,10 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
-                    
+
                     {/* SECCIÓN 1: IDENTIFICACIÓN */}
                     <div className="form-section">
-                        <h4 className="subsection-title"><User size={16}/> Datos Personales</h4>
+                        <h4 className="subsection-title"><User size={16} /> Datos Personales</h4>
                         <div className="form-grid-3">
                             <div className="form-group">
                                 <label>Tipo Doc. *</label>
@@ -134,24 +176,36 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                                     <option value="Pasaporte">Pasaporte</option>
                                 </select>
                             </div>
+
                             <div className="form-group">
                                 <label>Nro. Documento *</label>
-                                <input 
-                                    name="documento_identidad" 
-                                    value={formData.documento_identidad} 
-                                    onChange={handleChange} 
-                                    maxLength={15}
-                                    required 
-                                />
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input
+                                        name="documento_identidad"
+                                        value={formData.documento_identidad}
+                                        onChange={handleChange}
+                                        maxLength={8}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleConsultarDniApi}
+                                        disabled={buscandoExterno}
+                                        className="btn-search"
+                                        style={{ padding: '0 12px', background: '#3b82f6', color: 'white', borderRadius: '4px' }}
+                                    >
+                                        {buscandoExterno ? '...' : 'Consultar'}
+                                    </button>
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>Fecha Nacimiento *</label>
-                                <input 
-                                    type="date" 
-                                    name="fecha_nacimiento" 
-                                    value={formData.fecha_nacimiento} 
-                                    onChange={handleChange} 
-                                    required 
+                                <input
+                                    type="date"
+                                    name="fecha_nacimiento"
+                                    value={formData.fecha_nacimiento}
+                                    onChange={handleChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -174,8 +228,8 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
 
                     {/* SECCIÓN 2: DATOS SOCIALES Y CONTACTO */}
                     <div className="form-section" style={{ marginTop: '20px' }}>
-                        <h4 className="subsection-title"><Heart size={16}/> Información Social y Contacto</h4>
-                        
+                        <h4 className="subsection-title"><Heart size={16} /> Información Social y Contacto</h4>
+
                         <div className="form-grid-3">
                             <div className="form-group">
                                 <label>Género *</label>
@@ -209,12 +263,12 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                             <div className="form-group">
                                 <label>Hijos</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <Baby size={18} color="#6B7280"/>
-                                    <input 
-                                        type="number" 
-                                        name="cantidad_hijos" 
-                                        value={formData.cantidad_hijos} 
-                                        onChange={handleChange} 
+                                    <Baby size={18} color="#6B7280" />
+                                    <input
+                                        type="number"
+                                        name="cantidad_hijos"
+                                        value={formData.cantidad_hijos}
+                                        onChange={handleChange}
                                         min="0"
                                     />
                                 </div>
@@ -224,10 +278,10 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                             {formData.genero === 'F' && (
                                 <div className="form-group">
                                     <label>Último Embarazo (Fecha/Año)</label>
-                                    <input 
-                                        type="text" 
-                                        name="ultimo_embarazo" 
-                                        value={formData.ultimo_embarazo} 
+                                    <input
+                                        type="text"
+                                        name="ultimo_embarazo"
+                                        value={formData.ultimo_embarazo}
                                         onChange={handleChange}
                                         placeholder="Ej: 2018 o 12/05/2020"
                                     />
