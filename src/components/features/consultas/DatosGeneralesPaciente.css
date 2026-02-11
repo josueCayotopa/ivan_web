@@ -147,3 +147,10 @@
     border-color: #FFC107;
     box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.1);
 }
+/* DatosGeneralesPaciente.css */
+/* DatosGeneralesPaciente.css */
+@media (max-width: 768px) {
+    .datos-generales-container.compact-mode {
+        display: none !important; /* Oculta los campos de contacto, ubicación, etc. */
+    }
+}

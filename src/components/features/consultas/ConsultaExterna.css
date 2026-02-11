@@ -683,110 +683,81 @@ div.swal2-container {
     min-width: 70px;
 }
 
-/* ConsultaExterna.css - Mejoras Móviles */
-
+/* ConsultaExterna.css */
 @media (max-width: 768px) {
-
-    /* 1. Contenedor: Quitar el 'fixed' para permitir scroll natural */
+    /* 1. EL CAMBIO MÁS IMPORTANTE: Quitar el fixed y el 100vh */
     .consulta-container {
-        flex-direction: column;
-        position: relative;
-        /* Cambiar de fixed a relative */
+        position: absolute; /* Permite que el contenedor crezca hacia abajo */
+        display: block; 
         height: auto;
         min-height: 100vh;
-        overflow-y: auto;
+        overflow-y: visible !important;
+        background-color: #F3F4F6;
     }
 
-    /* 2. Sidebar: Convertirlo en una barra horizontal superior */
+    /* 2. Sidebar: Menú de botones arriba para que no estorbe al lado */
     .consulta-sidebar {
-        width: 100%;
-        min-width: 100%;
-        height: auto;
-        padding: 12px;
-        position: sticky;
-        top: 0;
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+        padding: 10px !important;
+        position: relative !important;
         border-right: none;
         border-bottom: 1px solid #E5E7EB;
-        background: #FFFFFF;
-        z-index: 100;
     }
 
-    /* Ocultar la tarjeta de resumen del paciente en móviles para ganar espacio */
-    .paciente-resumen-card {
-        display: none;
-    }
-
-    /* Navegación: Scrolleable horizontalmente */
+    /* 3. Menú de navegación en fila (Antecedentes, Motivos...) */
     .consulta-nav {
-        flex-direction: row;
-        overflow-x: auto;
+        flex-direction: row !important;
+        overflow-x: auto; /* Desliza de izquierda a derecha para ver opciones */
         gap: 8px;
-        padding-bottom: 8px;
-        scrollbar-width: none;
-        /* Ocultar scroll en Firefox */
+        padding-bottom: 5px;
     }
-
-    .consulta-nav::-webkit-scrollbar {
-        display: none;
-        /* Ocultar scroll en Chrome/Safari */
-    }
-
+    
     .nav-item {
-        white-space: nowrap;
-        padding: 8px 16px;
-        font-size: 0.85rem;
-        flex-shrink: 0;
+        white-space: nowrap; /* Evita que el texto se rompa */
+        padding: 10px 15px !important;
+        font-size: 0.8rem;
     }
 
-    .nav-item.active {
-        border-left: none;
-        border-bottom: 3px solid #FFC107;
-    }
-
-    /* 3. Contenido: Quitar paddings excesivos */
-    .content-header {
-        padding: 15px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+    /* 4. Contenido del formulario: Liberar scroll */
+    .consulta-content {
+        display: block;
+        height: auto;
+        overflow: visible;
     }
 
     .form-sections-container {
-        padding: 15px;
-        overflow: visible;
-        /* El scroll lo maneja el contenedor principal */
+        padding: 15px !important;
+        height: auto !important;
+        overflow-y: visible !important;
+        /* Espacio final para que los botones de abajo no tapen el teclado */
+        margin-bottom: 120px !important; 
     }
 
-    /* 4. Grids: Todo a una sola columna */
-    .form-grid-2,
-    .form-grid-3,
-    .checkbox-grid-3,
-    .checkbox-grid-4 {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-    }
-
-    /* 5. Vitales: Grid de 2 columnas para que no sea tan largo */
-    .vital-signs-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    /* 6. Botones de acción inferiores */
+    /* 5. Botones de acción pegados al final para que siempre puedas guardar */
     .sidebar-actions {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        flex-direction: row;
+        flex-direction: row !important;
         background: white;
         padding: 10px;
+        gap: 8px;
+        z-index: 3000;
         border-top: 1px solid #E5E7EB;
-        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
     }
 
-    .btn-save-consulta,
-    .btn-back {
+    .btn-save-consulta, .btn-back {
         flex: 1;
-        padding: 10px;
+        margin: 0 !important;
+        padding: 12px !important;
+    }
+
+    /* Ocultar elementos innecesarios en móvil */
+    .paciente-resumen-card, .content-header {
+        display: none !important;
     }
 }

@@ -83,12 +83,20 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
             if (atencion) {
                 if (atencion.paciente) setPacienteSeleccionado(atencion.paciente);
-                setFormData(prev => ({
-                    ...prev,
-                    ...atencion,
-                    fecha_atencion: atencion.fecha_atencion?.split('T')[0] || prev.fecha_atencion,
-                    hora_ingreso: atencion.hora_ingreso?.substring(0, 5) || '09:00'
-                }));
+                setFormData({
+                    paciente_id: atencion.paciente_id || '',
+                    medico_id: atencion.medico_id || '',
+                    especialidad_id: atencion.especialidad_id || '',
+                    tipo_atencion: atencion.tipo_atencion || '',
+                    tipo_cobertura: atencion.tipo_cobertura || '',
+                    fecha_atencion: atencion.fecha_atencion ? atencion.fecha_atencion.substring(0, 10) : '',
+                    hora_ingreso: atencion.hora_ingreso || '',
+                    estado: atencion.estado || 'Programada',
+                    motivo_consulta: atencion.motivo_consulta || '',
+                    observaciones: atencion.observaciones || '',
+                    medio_captacion: atencion.medio_captacion || '',
+                    monto: atencion.monto || '' // Agregamos el monto que pediste antes
+                });
             }
         };
 
@@ -297,6 +305,22 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 placeholder="Ej: Rinoplastia estética, retiro de puntos, evaluación de cicatriz..."
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E5E7EB' }}
                             />
+                        </div>
+                        <div className="form-group">
+                            <label>Monto de Atención (S/.)</label>
+                            <div className="input-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontWeight: 'bold', color: '#64748B' }}>S/</span>
+                                <input
+                                    type="number"
+                                    name="monto"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={formData.monto}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                    style={{ flex: 1 }}
+                                />
+                            </div>
                         </div>
 
 

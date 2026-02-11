@@ -292,6 +292,7 @@ const Atenciones = () => {
                                         <th>Médico</th>
                                         <th>Especialidad</th>
                                         <th>Tipo</th>
+                                        <th>Monto</th>
                                         <th>Estado</th>
                                         <th style={{ textAlign: 'right' }}>Acción</th>
                                     </tr>
@@ -322,6 +323,9 @@ const Atenciones = () => {
                                                 >
                                                     {atencion.estado}
                                                 </span>
+                                            </td>
+                                            <td style={{ fontWeight: '600' }}>
+                                                {atencion.monto ? `S/ ${parseFloat(atencion.monto).toFixed(2)}` : 'S/ 0.00'}
                                             </td>
                                             <td style={{ textAlign: 'right' }}>
                                                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
