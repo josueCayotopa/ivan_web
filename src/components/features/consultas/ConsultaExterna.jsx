@@ -105,39 +105,61 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         setLoading(true);
 
         try {
-            // 1. Intentar cargar la consulta de HOY
+            // 1. Intentar cargar la consulta de HOY (Modo Edición)
             const response = await consultaExternaService.getByAtencionId(atencion.id);
 
-            if (response.success && response.data) {
+            if (response && response.success && response.data) {
                 console.log('✅ Modo Edición: Cargando consulta actual');
                 actualizarEstadoConData(response.data, false);
             } else {
-                // 2. Si no hay hoy, buscar la ÚLTIMA consulta histórica del paciente
+                // 2. Si no hay hoy, buscar la ÚLTIMA consulta histórica (Modo Creación/Clonación)
                 console.log('✨ Modo Creación: Buscando última consulta histórica');
+
                 const resUltima = await consultaExternaService.getUltimaConsulta(p.id);
 
-                if (resUltima.success && resUltima.data) {
-                    actualizarEstadoConData(resUltima.data, true);
+                // Debug para verificar la estructura real en consola
+                console.log("Respuesta recibida:", resUltima);
+
+                /**
+                 * CORRECCIÓN ESTRATÉGICA:
+                 * Se intenta extraer el objeto de datos buscando en diferentes niveles.
+                 * Según tu captura de consola, los datos están directamente en 'resUltima'.
+                 */
+                const payload = resUltima?.data?.data || resUltima?.data || resUltima;
+
+                // Verificamos que el payload tenga contenido real (por ejemplo, buscando el ID)
+                if (payload && payload.id) {
+                    console.log('📦 Payload detectado:', payload);
+                    actualizarEstadoConData(payload, true); // true indica que es pre-carga/clonación
+
                     Swal.fire({
                         icon: 'info',
-                        title: 'Datos recuperados',
-                        text: 'Se han clonado los antecedentes y motivos de la última consulta.',
+                        title: 'Antecedentes recuperados',
+                        text: 'Se han importado los datos clínicos de la última consulta del paciente.',
                         toast: true,
                         position: 'top-end',
-                        timer: 3000,
-                        showConfirmButton: false
+                        timer: 4000,
+                        showConfirmButton: false,
+                        background: '#fff',
+                        color: '#333'
                     });
                 } else {
+                    console.log('Empty: No se encontró historial previo, inicializando nuevo.');
                     inicializarFormularioNuevo();
                 }
             }
         } catch (error) {
-            console.error("❌ Error en carga:", error);
+            console.error("❌ Error crítico en carga de consulta:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Sincronización',
+                text: 'No se pudo obtener el historial clínico.'
+            });
+            inicializarFormularioNuevo();
         } finally {
             setLoading(false);
         }
     };
-
     const actualizarEstadoConData = (data, esPreCarga = false) => {
         const { sistolica, diastolica } = consultaExternaService.parsearPresion(data.presion_arterial || '');
 
