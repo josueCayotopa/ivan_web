@@ -118,18 +118,64 @@ const ImagenesVideosTab = ({
   // ... (funciones verArchivo y eliminarArchivo se mantienen igual) ...
   const verArchivo = (a) => {
     const url = getUrl(a);
+    
     if (esImagen(a)) {
-      Swal.fire({ imageUrl: url, width: 800, showConfirmButton: false, showCloseButton: true });
+      Swal.fire({
+        title: 'Visualizador de Imagen',
+        imageUrl: url,
+        imageAlt: 'Foto del paciente',
+        width: 800,
+        showCloseButton: true,
+        showConfirmButton: false,
+        // Agregamos el botón de eliminar en el footer del modal
+        footer: `
+          <button id="btn-eliminar-modal" class="swal2-confirm swal2-styled" style="background-color: #d33;">
+            <i class="lucide-trash"></i> Eliminar esta imagen
+          </button>
+        `,
+        didOpen: () => {
+          // Vinculamos el clic del botón del modal con la función eliminarArchivo
+          const btnEliminar = document.getElementById('btn-eliminar-modal');
+          if (btnEliminar) {
+            btnEliminar.onclick = () => {
+              // Cerramos el modal actual y llamamos a la función de eliminar
+              Swal.close();
+              eliminarArchivo(a);
+            };
+          }
+        }
+      });
     } else {
       window.open(url, '_blank');
     }
   };
 
-  const eliminarArchivo = async (a) => {
-    // ... tu lógica de eliminar igual que antes ...
-    // Al final llamar a cargarArchivos();
-  };
+const eliminarArchivo = async (a) => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar"
+    });
 
+    if (result.isConfirmed) {
+      setLoading(true);
+      try {
+        await archivoService.eliminarArchivo(a.id);
+        Swal.fire("Eliminado", "El archivo ha sido borrado.", "success");
+        await cargarArchivos(); // Recarga el historial completo
+      } catch (e) {
+        console.error("Error al eliminar:", e);
+        Swal.fire("Error", "No se pudo eliminar el archivo.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="form-section fade-in-right">
