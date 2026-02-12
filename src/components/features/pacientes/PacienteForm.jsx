@@ -18,6 +18,7 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
         apellido_materno: '',
         fecha_nacimiento: '',
         genero: 'M',
+        medio_captacion: '',
 
         // Contacto
         telefono: '',
@@ -94,6 +95,7 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                 genero: paciente.genero || 'M',
                 estado_civil: paciente.estado_civil || '',
                 ocupacion: paciente.ocupacion || '',
+                medio_captacion: paciente.medio_captacion || '',
 
                 // Asegúrate de usar 'cantidad_hijos' como en tu modelo Pacientes.php
                 cantidad_hijos: paciente.cantidad_hijos || 0,
@@ -115,27 +117,27 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Dentro de PacienteForm.jsx
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             let response;
             if (isEditing) {
-                // Enviamos el ID junto con los datos actualizados
-                response = await pacienteService.updatePaciente({
-                    id: paciente.id,
-                    ...formData
-                });
+                response = await pacienteService.updatePaciente({ id: paciente.id, ...formData });
             } else {
                 response = await pacienteService.createPaciente(formData);
             }
 
             if (response.success) {
                 Swal.fire('Éxito', isEditing ? 'Paciente actualizado' : 'Paciente creado', 'success');
-                onSuccess(); // Esto refresca la lista en el componente padre
+
+                // 🔥 CAMBIO AQUÍ: Pasa el objeto del paciente (response.data) al padre
+                // Asumiendo que tu backend devuelve el paciente creado en response.data
+                onSuccess(response.data);
             }
         } catch (error) {
-            Swal.fire('Error', 'No se pudo procesar la solicitud', 'error');
+            // ... error handling
         } finally {
             setLoading(false);
         }
@@ -279,6 +281,17 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                                 <label>Celular / Teléfono</label>
                                 <input name="telefono" value={formData.telefono} onChange={handleChange} />
                             </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Medio de Captación</label>
+                            <select name="medio_captacion" value={formData.medio_captacion} onChange={handleChange} className="form-control">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="Recomendación">Recomendación</option>
+                                <option value="Otro">Otro</option>
+                            </select>
                         </div>
 
                         <div className="form-group">

@@ -708,3 +708,22 @@
         white-space: nowrap; /* Evita que el texto salte de línea y rompa la fila */
     }
 }
+/* Atenciones.css */
+
+.patient-name {
+    font-weight: 600;
+    color: #1E293B !important; /* Un azul muy oscuro, casi negro */
+    font-size: 0.95rem;
+    display: block;
+}
+
+.patient-subtitle {
+    font-size: 0.8rem;
+    color: #64748B; /* Gris para el DNI */
+}
+
+/* También asegura el color de las celdas de la tabla */
+.patients-table td {
+    color: #334155; 
+    vertical-align: middle;
+}

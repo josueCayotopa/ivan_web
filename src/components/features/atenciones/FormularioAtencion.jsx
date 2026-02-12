@@ -39,12 +39,12 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
         especialidad_id: '',
         medico_id: '',
         fecha_atencion: new Date().toISOString().split('T')[0],
-        hora_ingreso: '09:00', // Hora por defecto para simplificar
+       
 
         tipo_cobertura: 'Particular',
         motivo_consulta: '',
         observaciones: '',
-        medio_captacion: '',
+
         tipo_atencion: '',
         monto_total: '',
         estado: 'Programada'
@@ -91,11 +91,11 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     tipo_atencion: atencion.tipo_atencion || '',
                     tipo_cobertura: atencion.tipo_cobertura || '',
                     fecha_atencion: atencion.fecha_atencion ? atencion.fecha_atencion.substring(0, 10) : '',
-                    hora_ingreso: atencion.hora_ingreso || '',
+                 
                     estado: atencion.estado || 'Programada',
                     motivo_consulta: atencion.motivo_consulta || '',
                     observaciones: atencion.observaciones || '',
-                    medio_captacion: atencion.medio_captacion || '',
+
                     monto_total: atencion.monto_total || '' // Agregamos el monto que pediste antes
                 });
             }
@@ -230,28 +230,9 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 />
                             </div>
 
-                            <div className="form-group">
-                                <label>Hora Aproximada</label>
-                                <input
-                                    type="time"
-                                    name="hora_ingreso"
-                                    value={formData.hora_ingreso}
-                                    onChange={handleChange}
-                                    className="form-control"
-                                />
-                            </div>
+                           
 
-                            <div className="form-group">
-                                <label>Medio de Captación</label>
-                                <select name="medio_captacion" value={formData.medio_captacion} onChange={handleChange} className="form-control">
-                                    <option value="">-- Seleccionar --</option>
-                                    <option value="Instagram">Instagram</option>
-                                    <option value="Facebook">Facebook</option>
-                                    <option value="WhatsApp">WhatsApp</option>
-                                    <option value="Recomendación">Recomendación</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
-                            </div>
+
                         </div>
                         {/* CATEGORÍA DE ATENCIÓN */}
                         <div className="form-group">

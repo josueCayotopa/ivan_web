@@ -287,7 +287,7 @@ const Atenciones = () => {
                             <table className="patients-table">
                                 <thead>
                                     <tr>
-                                        <th>Hora</th>
+
                                         <th>Paciente</th>
                                         <th>Médico</th>
                                         <th>Especialidad</th>
@@ -301,9 +301,7 @@ const Atenciones = () => {
                                 <tbody>
                                     {atenciones.map((atencion) => (
                                         <tr key={atencion.id}>
-                                            <td className="time-cell">
-                                                {atencion.hora_ingreso?.substring(0, 5)}
-                                            </td>
+
                                             <td>
                                                 <div className="patient-name">{atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno}</div>
                                                 <div className="patient-subtitle">{atencion.paciente?.documento_identidad}</div>
