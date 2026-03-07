@@ -114,9 +114,29 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // Si cambia el tipo de documento, podrías querer limpiar el número actual
+        if (name === 'tipo_documento') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                documento_identidad: '' // Opcional: limpia el número al cambiar tipo
+            }));
+            return;
+        }
+
+        // Validación para el número de documento
+        if (name === 'documento_identidad') {
+            // Si es DNI, solo permitir números
+            if (formData.tipo_documento === 'DNI') {
+                const soloNumeros = value.replace(/\D/g, '');
+                setFormData(prev => ({ ...prev, [name]: soloNumeros.slice(0, 8) }));
+                return;
+            }
+        }
+
         setFormData(prev => ({ ...prev, [name]: value }));
     };
-
     // Dentro de PacienteForm.jsx
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -173,18 +193,16 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                                         name="documento_identidad"
                                         value={formData.documento_identidad}
                                         onChange={handleChange}
-                                        maxLength={8}
+                                        // Si es DNI, limita a 8, si es CE u otro, permite hasta 12 (o el valor que necesites)
+                                        maxLength={formData.tipo_documento === 'DNI' ? 8 : 12}
                                         required
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={handleConsultarDniApi}
-                                        disabled={buscandoExterno}
-                                        className="btn-search"
-                                        style={{ padding: '0 12px', background: '#3b82f6', color: 'white', borderRadius: '4px' }}
-                                    >
-                                        {buscandoExterno ? '...' : 'Consultar'}
-                                    </button>
+                                    {/* El botón de consulta API solo debería mostrarse o funcionar para DNI */}
+                                    {formData.tipo_documento === 'DNI' && (
+                                        <button type="button" onClick={handleConsultarDniApi} disabled={buscandoExterno}>
+                                            {buscandoExterno ? '...' : 'Reniec'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div className="form-group">
@@ -194,7 +212,7 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                                     name="fecha_nacimiento"
                                     value={formData.fecha_nacimiento}
                                     onChange={handleChange}
-                                    required
+
                                 />
                             </div>
                         </div>

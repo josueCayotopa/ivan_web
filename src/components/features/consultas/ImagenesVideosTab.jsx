@@ -118,7 +118,7 @@ const ImagenesVideosTab = ({
   // ... (funciones verArchivo y eliminarArchivo se mantienen igual) ...
   const verArchivo = (a) => {
     const url = getUrl(a);
-    
+
     if (esImagen(a)) {
       Swal.fire({
         title: 'Visualizador de Imagen',
@@ -150,7 +150,7 @@ const ImagenesVideosTab = ({
     }
   };
 
-const eliminarArchivo = async (a) => {
+  const eliminarArchivo = async (a) => {
     const result = await Swal.fire({
       title: "¿Estás seguro?",
       text: "Esta acción no se puede deshacer.",
