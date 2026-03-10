@@ -206,6 +206,8 @@ const PacienteForm = ({ paciente, onClose, onSuccess, initialDni = '' }) => {
                                 </div>
                             </div>
                             <div className="form-group">
+
+                                
                                 <label>Fecha Nacimiento *</label>
                                 <input
                                     type="date"
