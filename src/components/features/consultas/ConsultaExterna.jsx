@@ -492,7 +492,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                         rows="2"
                                         value={formData.otros_antecedentes}
                                         onChange={(e) => handleChange('otros_antecedentes', e.target.value)}
-                                        placeholder="Especifique otros antecedentes..."
+                                        placeholder=""
                                     />
                                 </div>
 
@@ -502,7 +502,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                         rows="2"
                                         value={formData.tratamiento_actual}
                                         onChange={(e) => handleChange('tratamiento_actual', e.target.value)}
-                                        placeholder="Medicamentos actuales..."
+                                        placeholder=""
                                     />
                                 </div>
 
@@ -512,7 +512,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                         rows="2"
                                         value={formData.intervenciones_quirurgicas}
                                         onChange={(e) => handleChange('intervenciones_quirurgicas', e.target.value)}
-                                        placeholder="Cirugías previas..."
+                                        placeholder=""
                                     />
                                 </div>
                             </div>
@@ -584,7 +584,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                             type="text"
                                             value={formData.hepatitis_tipo}
                                             onChange={(e) => handleChange('hepatitis_tipo', e.target.value)}
-                                            placeholder="Especifique tipo (A, B, C...)"
+                                            placeholder=""
                                         />
                                     </div>
                                 )}
@@ -595,7 +595,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                         rows="2"
                                         value={formData.otros_enfermedades}
                                         onChange={(e) => handleChange('otros_enfermedades', e.target.value)}
-                                        placeholder="Otras enfermedades..."
+                                        placeholder=""
                                     />
                                 </div>
                             </div>
@@ -658,7 +658,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
                                         type="text"
                                         value={formData.otros_alergias}
                                         onChange={(e) => handleChange('otros_alergias', e.target.value)}
-                                        placeholder="Otras alergias..."
+                                        placeholder=""
                                     />
                                 </div>
                             </div>

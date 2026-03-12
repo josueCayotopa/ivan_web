@@ -19,7 +19,7 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
             onChange={(e) =>
               handleChange("procedimiento_propuesto", e.target.value)
             }
-            placeholder="Ej: Lipoabdominoplastia, Rinoplastia, Botox, Relleno de labios..."
+            placeholder=""
           />
         </div>
 
@@ -30,7 +30,7 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
               type="text"
               value={safeValue(formData.tecnica_utilizar)}
               onChange={(e) => handleChange("tecnica_utilizar", e.target.value)}
-              placeholder="Ej: Técnica X, plano submuscular, microcánula..."
+              placeholder=""
             />
           </div>
 
@@ -54,7 +54,7 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
             rows="2"
             value={safeValue(formData.productos_usar)}
             onChange={(e) => handleChange("productos_usar", e.target.value)}
-            placeholder="Ej: toxina botulínica, ácido hialurónico, hilos, láser, etc."
+            placeholder=""
           />
         </div>
 
@@ -93,7 +93,7 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
             rows="4"
             value={safeValue(formData.indicaciones_pre)}
             onChange={(e) => handleChange("indicaciones_pre", e.target.value)}
-            placeholder="Ayuno, suspensión de medicamentos, exámenes previos, cuidados preoperatorios..."
+            placeholder=""
           />
         </div>
 
@@ -103,7 +103,7 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
             rows="4"
             value={safeValue(formData.indicaciones_post)}
             onChange={(e) => handleChange("indicaciones_post", e.target.value)}
-            placeholder="Cuidados, medicación, controles, reposo, signos de alarma..."
+            placeholder=""
           />
         </div>
       </div>
