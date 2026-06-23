@@ -440,6 +440,12 @@ div.swal2-container {
     gap: 12px;
 }
 
+.checkbox-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
 .fade-in-right {
     animation: slideInRight 0.3s ease-out;
 }
@@ -775,9 +781,59 @@ div.swal2-container {
         padding: 12px !important;
     }
 
-    /* Opcional: ocultar cosas grandes en móvil */
-    .paciente-resumen-card,
+    /* Ocultar header grande — info visible en sidebar mini-header */
     .content-header {
         display: none !important;
+    }
+
+    /* Resumen paciente: versión compacta en mobile */
+    .paciente-resumen-card {
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .paciente-header-row {
+        gap: 8px;
+    }
+
+    .paciente-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .paciente-main-info h4 {
+        font-size: 0.85rem;
+    }
+
+    .paciente-detalles-extra {
+        display: none;
+    }
+
+    /* Formularios: colapsar a 1 columna */
+    .form-grid-2,
+    .form-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Reducir padding de secciones */
+    .form-section {
+        padding: 16px !important;
+    }
+
+    /* Modal del historial: pantalla completa */
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+    }
+
+    /* Vitales: reducir tamaño de cards */
+    .vital-card {
+        padding: 10px;
+    }
+
+    .imc-value {
+        font-size: 1.4rem;
     }
 }

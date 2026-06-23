@@ -107,9 +107,9 @@ const Consultas = () => {
                     <p className="page-subtitle">Pacientes programados para hoy</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div className="consultas-header-controls">
                     {/* Buscador */}
-                    <div className="input-with-icon" style={{ minWidth: '250px' }}>
+                    <div className="input-with-icon consultas-search">
                         <Search size={18} />
                         <input
                             type="text"
@@ -122,13 +122,13 @@ const Consultas = () => {
                     </div>
 
                     {/* Selector de fecha */}
-                    <div className="input-with-icon">
+                    <div className="input-with-icon consultas-fecha">
                         <Calendar size={18} />
                         <input
                             type="date"
                             value={filtros.fecha}
                             onChange={(e) => setFiltros({ ...filtros, fecha: e.target.value })}
-                            style={{ paddingLeft: '35px', height: '40px', width: '160px' }}
+                            style={{ paddingLeft: '35px', height: '40px' }}
                         />
                     </div>
 
@@ -153,7 +153,7 @@ const Consultas = () => {
             ) : atenciones.length > 0 ? (
                 <div className="cards-grid" style={{ gridTemplateColumns: '1fr' }}>
                     {atenciones.map((atencion) => (
-                        <div key={atencion.id} className="appointment-card" style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <div key={atencion.id} className="appointment-card consulta-card">
 
                             {/* Borde de color según estado */}
                             <div className="card-left-strip" style={{
@@ -164,14 +164,7 @@ const Consultas = () => {
                                 width: '8px'
                             }} />
 
-                            <div className="card-content" style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: '20px',
-                                width: '100%'
-                            }}>
+                            <div className="card-content consulta-card-body">
 
                                 {/* Columna 1: Hora y Estado */}
                                 <div style={{ minWidth: '100px' }}>
@@ -204,7 +197,7 @@ const Consultas = () => {
                                 </div>
 
                                 {/* Columna 2: Info del Paciente */}
-                                <div style={{ flex: 1, padding: '0 20px', minWidth: '300px' }}>
+                                <div className="consulta-paciente-col">
                                     <h4 style={{ fontSize: '1.15rem', margin: '0 0 8px 0', color: '#1F2937', fontWeight: 600 }}>
                                         {atencion.paciente?.nombres} {atencion.paciente?.apellido_paterno} {atencion.paciente?.apellido_materno}
                                     </h4>
@@ -254,7 +247,7 @@ const Consultas = () => {
                                 </div>
 
                                 {/* Columna 3: ACCIONES */}
-                                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                <div className="consulta-acciones-col">
                                     {/* Botón Ver Historial */}
                                     <button
                                         onClick={() => handleVerHistorial(atencion.paciente_id)}

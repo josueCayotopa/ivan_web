@@ -1,0 +1,184 @@
+/* Roles.css */
+
+.roles-container {
+    padding: 20px;
+}
+
+/* ── Page Header ─────────────────────────────────────────── */
+.roles-container .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.roles-container .page-title {
+    font-size: 1.8rem;
+    color: #1E293B;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+}
+
+.roles-container .page-subtitle {
+    color: #64748B;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ── Botón crear ─────────────────────────────────────────── */
+.roles-container .btn-create {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    white-space: nowrap;
+}
+
+.roles-container .btn-create:hover {
+    background: linear-gradient(135deg, #FFB300 0%, #FFA000 100%);
+    transform: translateY(-2px);
+}
+
+/* ── Tabla ───────────────────────────────────────────────── */
+.roles-container .table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.roles-container .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.roles-container .custom-table th {
+    background-color: #F9FAFB;
+    text-align: left;
+    padding: 16px 20px;
+    color: #6B7280;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #E5E7EB;
+    white-space: nowrap;
+}
+
+.roles-container .custom-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #F3F4F6;
+    color: #374151;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.roles-container .custom-table tr:hover {
+    background-color: #FFFDF5;
+}
+
+/* ── Badges de estado ────────────────────────────────────── */
+.roles-container .status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.roles-container .status-badge.active,
+.roles-container .status-badge.true {
+    background-color: #DEF7EC;
+    color: #03543F;
+}
+
+.roles-container .status-badge.inactive,
+.roles-container .status-badge.false {
+    background-color: #FDE8E8;
+    color: #9B1C1C;
+}
+
+/* ── Acciones ────────────────────────────────────────────── */
+.roles-container .actions {
+    display: flex;
+    gap: 8px;
+}
+
+.roles-container .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    color: #6B7280;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.roles-container .btn-icon:hover {
+    background-color: #F3F4F6;
+}
+
+.roles-container .font-bold {
+    font-weight: 600;
+}
+
+/* ── Loading / empty ─────────────────────────────────────── */
+.roles-container .loading-state {
+    padding: 40px;
+    text-align: center;
+    color: #6B7280;
+}
+
+/* ── Mobile: <= 768px ────────────────────────────────────── */
+@media (max-width: 768px) {
+    .roles-container {
+        padding: 16px;
+    }
+
+    .roles-container .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .roles-container .page-title {
+        font-size: 1.4rem;
+    }
+
+    .roles-container .btn-create {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .roles-container .custom-table th,
+    .roles-container .custom-table td {
+        padding: 12px 14px;
+        font-size: 0.875rem;
+    }
+
+    .roles-container .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+}
+
+/* ── Mobile pequeño: <= 480px ────────────────────────────── */
+@media (max-width: 480px) {
+    .roles-container .page-title {
+        font-size: 1.2rem;
+    }
+}

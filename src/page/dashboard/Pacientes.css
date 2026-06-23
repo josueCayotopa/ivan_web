@@ -672,6 +672,25 @@
         align-items: flex-start;
     }
 
+    .patient-avatar-large {
+        width: 56px;
+        height: 56px;
+        font-size: 1.25rem;
+    }
+
+    /* Botones del footer del modal apilados */
+    .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .modal-footer .btn-cancel,
+    .modal-footer .btn-save {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
     .modal-overlay {
         padding: 10px;
     }

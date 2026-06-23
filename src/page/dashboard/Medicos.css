@@ -26,6 +26,77 @@
 }
 
 .tab-btn.active {
-    color: #FFC107; /* Tu color primario */
+    color: #FFC107;
     border-bottom-color: #FFC107;
+}
+
+/* ── Header controls ─────────────────────────────────────── */
+.medicos-header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.medicos-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.medicos-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    pointer-events: none;
+}
+
+.medicos-search-input {
+    padding: 10px 12px 10px 36px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    width: 320px;
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.15s;
+}
+
+.medicos-search-input:focus {
+    border-color: #FFC107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+/* ── Tabla mínima para no romper columnas ─────────────────── */
+.medicos-container .custom-table {
+    min-width: 700px;
+}
+
+/* ── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .medicos-container {
+        padding: 16px;
+    }
+
+    .medicos-header-controls {
+        width: 100%;
+    }
+
+    .medicos-search-box {
+        width: 100%;
+    }
+
+    .medicos-search-input {
+        width: 100%;
+    }
+
+    .medicos-header-controls .btn-create {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .medicos-container .page-title {
+        font-size: 1.4rem;
+    }
 }

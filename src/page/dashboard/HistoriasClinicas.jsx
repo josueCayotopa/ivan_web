@@ -110,7 +110,7 @@ const HistoriasClinicas = () => {
                     </button>
 
                     {/* Tarjeta de identificación del paciente */}
-                    <div className="detail-header" style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #F3F4F6', marginBottom: '30px' }}>
+                    <div className="detail-header" style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #F3F4F6', marginBottom: '30px', flexWrap: 'wrap', gap: '16px' }}>
                         <div className="patient-avatar-large">
                             {selectedPaciente.nombres?.charAt(0)}{selectedPaciente.apellido_paterno?.charAt(0)}
                         </div>
@@ -126,7 +126,7 @@ const HistoriasClinicas = () => {
                                 <div key={index} className="stat-card" style={{ marginBottom: '15px', borderLeft: '4px solid #FFC107', cursor: 'pointer' }}
                                     onClick={() => setConsultaParaVer(consulta)}> {/* ACCIÓN AL HACER CLIC */}
                                     <div className="stat-content">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                                             <p className="stat-label"><Calendar size={14} /> {new Date(consulta.created_at || consulta.fecha).toLocaleDateString()}</p>
                                             <span className="status-badge active">Ver Detalle Completo</span>
                                         </div>

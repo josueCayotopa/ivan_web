@@ -101,19 +101,14 @@ const Medicos = () => {
                     <p className="page-subtitle">Administra el personal médico y sus horarios</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <div className="search-box" style={{ position: 'relative' }}>
+                <div className="medicos-header-controls">
+                    <div className="medicos-search-box">
+                        <Search size={16} className="medicos-search-icon" />
                         <input
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
                             placeholder="Buscar por nombre o CMP..."
-                            style={{
-                                padding: '10px 12px',
-                                borderRadius: 10,
-                                border: '1px solid #e5e7eb',
-                                width: 320,
-                                outline: 'none'
-                            }}
+                            className="medicos-search-input"
                         />
                     </div>
                     <button className="btn-create" onClick={() => handleOpenForm(null)}>
@@ -124,7 +119,7 @@ const Medicos = () => {
 
             {error && <div className="error-alert">{error}</div>}
 
-            <div className="table-container fade-in">
+            <div className="table-container fade-in" style={{ overflowX: 'auto' }}>
                 {loading ? (
                     <div className="loading-state">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>

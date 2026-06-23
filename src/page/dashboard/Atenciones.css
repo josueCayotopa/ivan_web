@@ -702,10 +702,109 @@
 
 /* Ajustes para celdas en móvil */
 @media (max-width: 768px) {
-    .table-responsive-container td, 
+    .table-responsive-container td,
     .table-responsive-container th {
-        padding: 12px 15px !important; /* Espaciado más compacto */
-        white-space: nowrap; /* Evita que el texto salte de línea y rompa la fila */
+        padding: 12px 15px !important;
+        white-space: nowrap;
+    }
+}
+
+/* ── Consultas page ──────────────────────────────────────────── */
+
+/* Header controls: search + date + refresh */
+.consultas-header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.consultas-search {
+    flex: 1;
+    min-width: 200px;
+}
+
+.consultas-fecha {
+    min-width: 160px;
+}
+
+/* Card en modo fila (desktop) */
+.consulta-card {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Cuerpo interno de la card */
+.consulta-card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+}
+
+/* Columna datos del paciente */
+.consulta-paciente-col {
+    flex: 1;
+    padding: 0 20px;
+    min-width: 0;
+}
+
+/* Columna acciones */
+.consulta-acciones-col {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ── Mobile: <= 640px ──────────────────────────────────────── */
+@media (max-width: 640px) {
+    /* Header controls apilados */
+    .consultas-header-controls {
+        width: 100%;
+    }
+
+    .consultas-search,
+    .consultas-fecha {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .consultas-fecha input[type="date"] {
+        width: 100% !important;
+    }
+
+    /* Card pasa a columna */
+    .consulta-card {
+        flex-direction: column !important;
+        align-items: stretch;
+    }
+
+    /* Cuerpo apilado */
+    .consulta-card-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    /* Columna paciente ocupa todo el ancho */
+    .consulta-paciente-col {
+        padding: 0;
+        width: 100%;
+    }
+
+    /* Botones de acción: full width en mobile */
+    .consulta-acciones-col {
+        width: 100%;
+    }
+
+    .consulta-acciones-col .btn-action,
+    .consulta-acciones-col .btn-create {
+        flex: 1;
+        justify-content: center;
+        min-width: unset !important;
     }
 }
 /* Atenciones.css */

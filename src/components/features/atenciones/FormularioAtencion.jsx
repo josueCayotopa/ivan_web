@@ -47,6 +47,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
 
         tipo_atencion: '',
         monto_total: '',
+        monto_total_dolares: '',
         estado: 'Programada'
     });
 
@@ -96,7 +97,8 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     motivo_consulta: atencion.motivo_consulta || '',
                     observaciones: atencion.observaciones || '',
 
-                    monto_total: atencion.monto_total || '' // Agregamos el monto que pediste antes
+                    monto_total: atencion.monto_total || '' ,// Agregamos el monto que pediste antes
+                    monto_total_dolares: atencion.monto_total_dolares || ''
                 });
             }
         };
@@ -179,7 +181,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     <div className="form-section">
                         <div className="section-label"><User size={18} /> Información del Paciente</div>
                         {!pacienteSeleccionado ? (
-                            <div className="patient-search-row" style={{ display: 'flex', gap: '10px' }}>
+                            <div className="patient-search-row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                 <input
                                     type="text"
                                     placeholder="Ingrese DNI del paciente..."
@@ -208,7 +210,7 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                     {/* DATOS DE ATENCIÓN SIMPLIFICADOS */}
                     <div className="form-section" style={{ marginTop: '20px' }}>
                         <div className="section-label"><Stethoscope size={18} /> Detalles de la Cita</div>
-                        <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div className="form-grid-2">
 
                             <div className="form-group">
                                 <label>Médico Tratante</label>
@@ -270,22 +272,33 @@ const FormularioAtencion = ({ atencion, onClose, onSuccess }) => {
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E5E7EB' }}
                             />
                         </div>
-                        <div className="form-group">
-                            <label>Monto Total (S/)</label>
-                            <input
-                                type="number"
-                                name="monto_total" // ✅ Debe ser monto_total
-                                value={formData.monto_total} // ✅ Debe ser monto_total
-                                onChange={handleChange}
-                                placeholder="0.00"
-                                step="0.01"
-                            />
-                        </div>
+                            <div className="form-group">
+                                <label>Monto Total (S/)</label>
+                                <input
+                                    type="number"
+                                    name="monto_total" // ✅ Debe ser monto_total
+                                    value={formData.monto_total} // ✅ Debe ser monto_total
+                                    onChange={handleChange}
+                                    placeholder="0.00"
+                                    step="0.01"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Monto Total (USD)</label>
+                                <input
+                                    type="number"
+                                    name="monto_total_dolares" // ✅ Debe ser monto_total_dolares
+                                    value={formData.monto_total_dolares} // ✅ Debe ser monto_total_dolares
+                                    onChange={handleChange}
+                                    placeholder="0.00"
+                                    step="0.01"
+                                />
+                            </div>
 
 
                     </div>
                     {/* BOTONES DE ACCIÓN */}
-                    <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #E2E8F0', paddingTop: '15px' }}>
+                    <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #E2E8F0', paddingTop: '15px', flexWrap: 'wrap' }}>
                         <button type="button" className="btn-cancel" onClick={onClose} style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #E2E8F0', background: 'white', cursor: 'pointer' }}>
                             Cancelar
                         </button>

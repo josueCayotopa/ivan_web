@@ -147,10 +147,41 @@
     border-color: #FFC107;
     box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.1);
 }
-/* DatosGeneralesPaciente.css */
-/* DatosGeneralesPaciente.css */
+/* ── Mobile ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
+    /* Mantener el header visible — ocultar solo los campos de edición */
     .datos-generales-container.compact-mode {
-        display: none !important; /* Oculta los campos de contacto, ubicación, etc. */
+        display: block;
+    }
+
+    /* Header: permitir wrap cuando el nombre es largo */
+    .compact-header {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    .secondary-info {
+        text-align: left;
+        width: 100%;
+    }
+
+    /* Ocultar el grid de edición en mobile — demasiado denso */
+    .datos-edit-grid {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .patient-name {
+        font-size: 0.85rem;
+    }
+
+    .patient-meta {
+        font-size: 0.7rem;
+    }
+
+    .info-badge {
+        font-size: 0.65rem;
     }
 }
