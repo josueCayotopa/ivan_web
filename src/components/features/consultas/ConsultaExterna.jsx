@@ -76,6 +76,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
         productos_usar: '',
         numero_sesiones: 1,
         precio_estimado: '',
+        precio_estimado_dolares: '',
         proxima_cita: '',
         indicaciones_pre: '',
         indicaciones_post: '',
@@ -233,6 +234,7 @@ const ConsultaExterna = ({ atencion, onClose }) => {
             productos_usar: data.productos_usar || '',
             numero_sesiones: data.numero_sesiones || 1,
             precio_estimado: data.precio_estimado || '', // <--- Mapear monto
+            precio_estimado_dolares: data.precio_estimado_dolares || '',
             proxima_cita: data.proxima_cita || '',
         }));
     };

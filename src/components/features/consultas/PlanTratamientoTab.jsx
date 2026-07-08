@@ -73,6 +73,21 @@ const PlanTratamientoTab = ({ formData, handleChange }) => {
           </div>
 
           <div className="form-group">
+            <label>Precio estimado (US$):</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={safeValue(formData.precio_estimado_dolares)}
+              onChange={(e) => handleChange("precio_estimado_dolares", e.target.value)}
+              placeholder="Ej: 950"
+            />
+          </div>
+        </div>
+
+        <div className="form-grid-2">
+          <div className="form-group">
             <label>Próxima cita:</label>
             <input
               type="date"

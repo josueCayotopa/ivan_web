@@ -655,6 +655,16 @@
         flex-direction: column;
     }
 
+    /* En columna, el strip no puede depender de min-height:100%
+       (heredado del layout en fila) porque eso lo hace crecer tanto
+       como el contenido y empuja el contenido real fuera de la tarjeta
+       (overflow:hidden), dejándola en blanco. Pasa a barra horizontal. */
+    .card-left-strip {
+        width: 100% !important;
+        min-height: 0 !important;
+        height: 4px;
+    }
+
     .card-actions {
         border-left: none;
         border-top: 1px solid #F3F4F6;
